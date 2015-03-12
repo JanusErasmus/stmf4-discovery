@@ -5,8 +5,8 @@
 #include <time.h>
 
 #include "TermCMD.h"
-
 #include "utils.h"
+#include "F4_RTC.h"
 
 void showThread();
 void showUsage();
@@ -21,13 +21,17 @@ void System::handle(cTerm & t,int argc,char *argv[])
 
 	if(!strcmp(argv[0],"time"))
 	{
+
 		time_t now = time(NULL);
-		t << "RTC    : " << asctime(localtime(&now));
+		if(F4RTC::hasBeenSet())
+		t << t.format("wallclock: "GREEN("%s"), asctime(localtime(&now)));
+		else
+			t << "wallclock: " << asctime(localtime(&now));
 
 		now = cyg_current_time() / 100;
 		if(now < 60)
 		{
-			t << "Up time: " << (int)now << "s";
+			t << "Up time  : " << (int)now << "s";
 		}
 		else
 		{
@@ -35,7 +39,7 @@ void System::handle(cTerm & t,int argc,char *argv[])
 			now %= 60;
 			if(min < 60)
 			{
-				t << "Up time: " << min << "m" << (int)now << "s";
+				t << "Up time  : " << min << "m" << (int)now << "s";
 			}
 			else
 			{
@@ -43,13 +47,13 @@ void System::handle(cTerm & t,int argc,char *argv[])
 				min %= 60;
 				if(hour < 24)
 				{
-					t << "Up time: " << hour << "h" << min << "m" << (int)now << "s";
+					t << "Up time  : " << hour << "h" << min << "m" << (int)now << "s";
 				}
 				else
 				{
 					int day = hour / 24;
 					hour %= 24;
-					t << "Up time:  "<< day << "d" << hour << "h" << min << "m" << (int)now << "s";
+					t << "Up time  :  "<< day << "d" << hour << "h" << min << "m" << (int)now << "s";
 				}
 			}
 		}
@@ -66,7 +70,7 @@ void showUsage()
 	extern cyg_uint32  _end;				//diag_printf("__end    0x%08X\n",(cyg_uint32)&_end);
 	struct mallinfo heap_info = mallinfo();
 
-	cyg_uint32 text_size = (cyg_uint32)&__rom_data_start - 0x08000014; //this is the program address
+	cyg_uint32 text_size = (cyg_uint32)&__rom_data_start - 0x08000010; //this is the program address
 	cyg_uint32 data_size =  (cyg_uint32)&__ram_data_end - (cyg_uint32)&__ram_data_start;
 	cyg_uint32 bss_size  = (cyg_uint32)&_end - (cyg_uint32)&__ram_data_end + 8;
 	cyg_uint32 total_rom = text_size + data_size + bss_size;
@@ -112,7 +116,12 @@ void showThread()
 
 void System::reset(cTerm & t, int argc, char *argv[])
 {
-	//sam4sCPUinfo::resetCPU();
+	diag_printf("Device will now RESET\n");
+
+	cyg_thread_delay(100);
+	cyg_scheduler_lock();
+
+	HAL_WRITE_UINT32(0xE000ED00 + 0x0C, (0x5FA << 16) | (1 << 2));
 }
 
 void System::setTime(cTerm & term, int argc,char * argv[])
@@ -123,44 +132,48 @@ void System::setTime(cTerm & term, int argc,char * argv[])
 		yy = strtoul(argv[1],NULL,10);
 		if(yy < 1900)
 			return;
-		term << term.format("yy : %d\n", yy);
+		//term << term.format("yy : %d\n", yy);
 
 		mm = strtoul(argv[2],NULL,10);
 		if(mm > 12)
 			return;
-		term << term.format("mm : %d\n", mm);
+		//term << term.format("mm : %d\n", mm);
 
 		dd = strtoul(argv[3],NULL,10);
 		if(dd > 31)
 			return;
-		term << term.format("dd : %d\n", dd);
+		//term << term.format("dd : %d\n", dd);
 
 		h = strtoul(argv[4],NULL,10);
 		if(h > 24)
 			return;
-		term << term.format("h  : %d\n", h);
+		//term << term.format("h  : %d\n", h);
 
 		m = strtoul(argv[5],NULL,10);
 		if(m > 60)
 			return;
-		term << term.format("m  : %d\n", m);
+		//term << term.format("m  : %d\n", m);
 
 		s = strtoul(argv[6],NULL,10);
 		if(s > 60)
 			return;
-		term << term.format("s  : %d\n", s);
+		//term << term.format("s  : %d\n", s);
 
-		time_t timeVal;
-		struct tm info;
-		info.tm_year = yy - 1900;
-		info.tm_mon =  mm - 1;
-		info.tm_mday = dd;
-		info.tm_hour = h;
-		info.tm_min = m;
-		info.tm_sec = s;
-		timeVal = mktime(&info);
-		if(!cyg_libc_time_settime(timeVal))
-				term<<"Updated time\n";
+		bool status = F4RTC::setTime(yy - 1900, mm - 1, dd, h, m, s);
+
+//		time_t timeVal;
+//		struct tm info;
+//		info.tm_year = yy - 1900;
+//		info.tm_mon =  mm - 1;
+//		info.tm_mday = dd;
+//		info.tm_hour = h;
+//		info.tm_min = m;
+//		info.tm_sec = s;
+//		timeVal = mktime(&info);
+		if(status)
+				term<<GREEN("Updated time\n");
+		else
+			term<<RED("Could not update time\n");
 	}
 	else
 	{

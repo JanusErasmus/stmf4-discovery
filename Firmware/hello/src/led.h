@@ -8,17 +8,10 @@ class cLED
 public :
 	struct ledPins_s
 	{
-		cyg_uint32 greenPinSpec;
-		cyg_uint32 redPinSpec;
+		cyg_uint32 pinSpec;
 	};
 
 private:
-	enum eLEDcolor
-	{
-		red,
-		green,
-		off
-	};
 
 	cLED(ledPins_s* pinSpecs, cyg_uint8 pinCount);
 	static cLED* __instance;
@@ -34,7 +27,7 @@ private:
 
 	void setupPorts(ledPins_s* ports, cyg_uint8 count);
 
-	void setLED(cyg_uint8, eLEDcolor);
+	void setLED(cyg_uint8, bool);
 	void animateTest();
 	void animateIdle();
 
