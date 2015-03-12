@@ -64,10 +64,18 @@ void cLED::animateIdle()
 	for(cyg_uint8 k = 0; k < 4; k++)
 	{
 		setLED(k, 1);
-		cyg_thread_delay(10);
+		cyg_thread_delay(20);
 		setLED(k, 0);
-		cyg_thread_delay(10);
+		cyg_thread_delay(20);
 	}
+
+	for(cyg_uint8 k = 2; k > 0; k--)
+		{
+			setLED(k, 1);
+			cyg_thread_delay(20);
+			setLED(k, 0);
+			cyg_thread_delay(20);
+		}
 }
 
 void cLED::animateTest()
