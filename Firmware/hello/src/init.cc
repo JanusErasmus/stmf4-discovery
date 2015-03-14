@@ -9,6 +9,7 @@
 #include "init.h"
 #include "led.h"
 #include "F4_RTC.h"
+#include "dog_LCD.h"
 
 cInit * cInit::__instance = NULL;
 
@@ -65,13 +66,29 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	};
 	cLED::init(ledPinNumbers, 4);
 
+	dogLCD lcd;
+	lcd << "Hello";
 
 	// Initialize the Terminal
 	cTerm::init((char *)"/dev/tty1",128,"discRTC>>");
 
+	char string[16];
+
+	lcd.setLine(2);
+	time_t now = time(NULL);
+	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
+	lcd << string;
+
 	for (;;)
 	{
 		cyg_thread_delay(100);
+		lcd.setLine(1);
+		lcd << "Time ";
+		now = time(NULL);
+		strftime(string, 16, "%H:%M:%S", localtime(&now));
+		lcd << string;
+
+
 	}
 }
 
