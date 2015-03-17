@@ -8,6 +8,7 @@ class dogLCD
 	char mString[32];
 
 	void initLCM();
+	void setDBpins(cyg_uint8 data);
 	void writeIntruction(cyg_uint8 instruction);
 	void putc(const char c);
 

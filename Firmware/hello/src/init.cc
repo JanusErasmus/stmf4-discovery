@@ -72,12 +72,20 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	// Initialize the Terminal
 	cTerm::init((char *)"/dev/tty1",128,"discRTC>>");
 
+	//initButton();
+
 	char string[16];
 
 	lcd.setLine(2);
 	time_t now = time(NULL);
 	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
 	lcd << string;
+
+	lcd.setLine(3);
+	lcd << "Line 3";
+
+	lcd.setLine(4);
+		lcd << "Line 4";
 
 	for (;;)
 	{
@@ -92,3 +100,17 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	}
 }
 
+void cInit::initButton()
+{
+	/*cyg_interrupt_mask(CYGNUM_HAL_INTERRUPT_EXTI0);
+	cyg_interrupt_create(CYGNUM_HAL_INTERRUPT_EXTI0,
+			7,
+			(cyg_addrword_t)0,
+			handleISR,
+			handleDSR,
+			mPDx_IntHandle,
+			mPDx_Interrupt);
+
+	cyg_interrupt_attach(mPDx_IntHandle);
+	cyg_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EXTI0);*/
+}
