@@ -56,20 +56,7 @@ cdl_configuration eCos {
 };
 
 # ---- conflicts -------------------------------------------------------
-# There are 3 conflicts.
-#
-# package CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY
-#   Property Requires
-#   "requires" constraint not satisfied:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 336 
-#
-# package CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY
-#   Property Requires
-#   "requires" constraint not satisfied:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 7 
-#
-# package CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY
-#   Property Requires
-#   "requires" constraint not satisfied:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV == 2 
-
+# There are no conflicts.
 
 # ---- contents --------------------------------------------------------
 # >
@@ -128,10 +115,10 @@ cdl_option CYGBLD_GLOBAL_CFLAGS {
     #   --> "-Wall -Wpointer-arith -Wstrict-prototypes -Wundef -Woverloaded-virtual -Wno-write-strings -mcpu=cortex-m3 -mthumb -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions"
 
     # The following properties are affected by this value
-    # option CYGBLD_INFRA_CFLAGS_PIPE
-    #     Requires:  is_substr(CYGBLD_GLOBAL_CFLAGS, " -pipe") 
     # option CYGBLD_INFRA_CFLAGS_WARNINGS_AS_ERRORS
     #     Requires:  is_substr(CYGBLD_GLOBAL_CFLAGS, " -Werror") 
+    # option CYGBLD_INFRA_CFLAGS_PIPE
+    #     Requires:  is_substr(CYGBLD_GLOBAL_CFLAGS, " -pipe") 
     # package CYGPKG_HAL_CORTEXM
     #     Requires:  CYGHWR_HAL_CORTEXM_BIGENDIAN implies
     #             is_substr(CYGBLD_GLOBAL_CFLAGS,   " -mbig-endian ") &&
@@ -356,6 +343,20 @@ cdl_option CYGBLD_GLOBAL_LDFLAGS {
     #             
 };
 
+# Standard compiler warning flags
+# This option specifies the default warning-related compiler flags used
+# on all eCos platforms.
+#
+cdl_option CYGBLD_GLOBAL_WARNFLAGS {
+    # Calculated value:  "-Wall -Wpointer-arith -Wstrict-prototypes -Wundef -Woverloaded-virtual -Wno-write-strings " 
+    # Flavor: data
+    # Current_value: -Wall -Wpointer-arith -Wstrict-prototypes -Wundef -Woverloaded-virtual -Wno-write-strings 
+
+    # The following properties are affected by this value
+    # option CYGBLD_GLOBAL_CFLAGS
+    #     DefaultValue:  CYGBLD_GLOBAL_WARNFLAGS . "-mcpu=cortex-m3 -mthumb -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions" 
+};
+
 # Build common GDB stub ROM image
 # Unless a target board has specific requirements to the
 # stub implementation, it can use a simple common stub.
@@ -371,20 +372,6 @@ cdl_option CYGBLD_BUILD_COMMON_GDB_STUBS {
     # Requires: CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     #     CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS == 0
     #   --> 0
-};
-
-# Standard compiler warning flags
-# This option specifies the default warning-related compiler flags used
-# on all eCos platforms.
-#
-cdl_option CYGBLD_GLOBAL_WARNFLAGS {
-    # Calculated value:  "-Wall -Wpointer-arith -Wstrict-prototypes -Wundef -Woverloaded-virtual -Wno-write-strings " 
-    # Flavor: data
-    # Current_value: -Wall -Wpointer-arith -Wstrict-prototypes -Wundef -Woverloaded-virtual -Wno-write-strings 
-
-    # The following properties are affected by this value
-    # option CYGBLD_GLOBAL_CFLAGS
-    #     DefaultValue:  CYGBLD_GLOBAL_WARNFLAGS . "-mcpu=cortex-m3 -mthumb -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions" 
 };
 
 # <
@@ -2852,18 +2839,18 @@ cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV {
 #
 cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL {
     # Flavor: data
-    user_value 240
+    user_value 336
     # value_source user
     # Default value: 9
     # Legal values: 2 to 432
     # Requires:  (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F1") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL <= 16) 
     #     CYGHWR_HAL_CORTEXM_STM32_FAMILY == F4
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 240
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 336
     #   --> 1
     # Requires:  ((CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F4")) implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL <= 432) 
     #     CYGHWR_HAL_CORTEXM_STM32_FAMILY == F4
     #     CYGHWR_HAL_CORTEXM_STM32_FAMILY == F4
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 240
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 336
     #   --> 1
 
     # The following properties are affected by this value
@@ -2932,7 +2919,7 @@ cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV {
 #
 cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV {
     # Flavor: data
-    user_value 4
+    user_value 2
     # value_source user
     # Default value: 1
     # Legal values:  1 2 4 8 16 
@@ -2955,7 +2942,7 @@ cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV {
     #   --> 1
 
     # Flavor: data
-    user_value 5
+    user_value 7
     # value_source user
     # Default value: 10
     # Legal values: 4 to 15
@@ -3301,14 +3288,14 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY {
     #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV == 8
     #   --> 1
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 336 
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 240
-    #   --> 0
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 336
+    #   --> 1
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV == 2 
     #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV == 2
     #   --> 1
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 7 
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 5
-    #   --> 0
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 7
+    #   --> 1
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV == 1 
     #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV == 1
     #   --> 1
@@ -3316,8 +3303,8 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY {
     #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK1_DIV == 4
     #   --> 1
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV == 2 
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV == 4
-    #   --> 0
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PCLK2_DIV == 2
+    #   --> 1
 };
 
 # >
@@ -3343,12 +3330,12 @@ cdl_component CYG_HAL_STARTUP {
     #     Calculated:  (CYG_HAL_STARTUP == "ROM"    ) ? "cortexm_stm32f4discovery_rom"      :
     #                             (CYG_HAL_STARTUP == "JTAG"   ) ? "cortexm_stm32f4discovery_jtag"     :
     #                                                              "undefined" 
-    # option CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE
-    #     DefaultValue:  CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR 
-    # component CYGDBG_HAL_DIAG_TO_DEBUG_CHAN
-    #     DefaultValue:  (CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS  || CYG_HAL_STARTUP == "RAM") ? 1 : 0
     # option CYGSEM_HAL_INSTALL_MMU_TABLES
     #     DefaultValue:  CYG_HAL_STARTUP != "RAM" 
+    # component CYGDBG_HAL_DIAG_TO_DEBUG_CHAN
+    #     DefaultValue:  (CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS  || CYG_HAL_STARTUP == "RAM") ? 1 : 0
+    # option CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE
+    #     DefaultValue:  CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR 
 };
 
 # Memory layout
