@@ -10,6 +10,7 @@
 #include "led.h"
 #include "F4_RTC.h"
 #include "dog_LCD.h"
+#include "usbDevice.h"
 
 cInit * cInit::__instance = NULL;
 
@@ -54,9 +55,13 @@ cInit::cInit()
 void cInit::init_thread_func(cyg_addrword_t arg)
 {
 
-	if(!F4RTC::init())
-		diag_printf(RED("RTC NOT initialized\n"));
+	CYGHWR_HAL_STM32_GPIO_SET(CYGHWR_HAL_STM32_GPIO(D, 5, GPIO_IN, 0, OPENDRAIN, NONE, 2MHZ));
 
+	usbDevice::init();
+//
+//	if(!F4RTC::init())
+//		diag_printf(RED("RTC NOT initialized\n"));
+//
 	cLED::ledPins_s ledPinNumbers[] = //no pin is 0xFF
 	{
 			{ CYGHWR_HAL_STM32_GPIO(D, 13, GPIO_OUT, 0, PUSHPULL, NONE, 2MHZ)},
@@ -65,36 +70,37 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 			{ CYGHWR_HAL_STM32_GPIO(D, 14, GPIO_OUT, 0, PUSHPULL, NONE, 2MHZ)},
 	};
 	cLED::init(ledPinNumbers, 4);
-
-	dogLCD lcd;
-	lcd << "Hello";
-
+//
+//	dogLCD lcd;
+//	lcd << "Hello";
+//
 	// Initialize the Terminal
 	cTerm::init((char *)"/dev/tty1",128,"discRTC>>");
+//
+//	//initButton();
+//
+//	char string[16];
+//
+//	lcd.setLine(2);
+//	time_t now = time(NULL);
+//	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
+//	lcd << string;
+//
+//	lcd.setLine(3);
+//	lcd << "Line 3";
+//
+//	lcd.setLine(4);
+//		lcd << "Line 4";
 
-	//initButton();
-
-	char string[16];
-
-	lcd.setLine(2);
-	time_t now = time(NULL);
-	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
-	lcd << string;
-
-	lcd.setLine(3);
-	lcd << "Line 3";
-
-	lcd.setLine(4);
-		lcd << "Line 4";
 
 	for (;;)
 	{
 		cyg_thread_delay(100);
-		lcd.setLine(1);
-		lcd << "Time ";
-		now = time(NULL);
-		strftime(string, 16, "%H:%M:%S", localtime(&now));
-		lcd << string;
+//		lcd.setLine(1);
+//		lcd << "Time ";
+//		now = time(NULL);
+//		strftime(string, 16, "%H:%M:%S", localtime(&now));
+//		lcd << string;
 
 
 	}

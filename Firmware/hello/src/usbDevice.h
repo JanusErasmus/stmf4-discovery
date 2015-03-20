@@ -4,9 +4,9 @@
 
 #include "definitions.h"
 
-#define USBRXBUFF_SIZE 1024
+#define USBRXBUFF_SIZE 64
 
-class usbDevice 
+class usbDevice
 {
 public:
 	enum eUSBstate
@@ -33,6 +33,8 @@ private:
 
 	cyg_uint8 mUSBRXbuff[USBRXBUFF_SIZE];
 	cyg_uint32 mUSBRXlen;
+	cyg_uint8 mUSBcmdbuff[USBRXBUFF_SIZE];
+	cyg_uint32 mUSBcmdlen;
 
 	usbDevice();
 	static void rx_thread_func(cyg_addrword_t arg);

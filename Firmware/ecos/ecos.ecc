@@ -56,11 +56,15 @@ cdl_configuration eCos {
 };
 
 # ---- conflicts -------------------------------------------------------
-# There are 1 conflicts.
+# There are 2 conflicts.
 #
 # package CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY
 #   Property Requires
 #   "requires" constraint not satisfied:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 336 
+#
+# package CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY
+#   Property Requires
+#   "requires" constraint not satisfied:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 7 
 
 
 # ---- contents --------------------------------------------------------
@@ -2844,18 +2848,18 @@ cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV {
 #
 cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL {
     # Flavor: data
-    user_value 200
+    user_value 192
     # value_source user
     # Default value: 9
     # Legal values: 2 to 432
     # Requires:  (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F1") implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL <= 16) 
     #     CYGHWR_HAL_CORTEXM_STM32_FAMILY == F4
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 200
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 192
     #   --> 1
     # Requires:  ((CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F2") || (CYGHWR_HAL_CORTEXM_STM32_FAMILY=="F4")) implies (CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL <= 432) 
     #     CYGHWR_HAL_CORTEXM_STM32_FAMILY == F4
     #     CYGHWR_HAL_CORTEXM_STM32_FAMILY == F4
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 200
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 192
     #   --> 1
 
     # The following properties are affected by this value
@@ -2947,7 +2951,7 @@ cdl_option CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV {
     #   --> 1
 
     # Flavor: data
-    user_value 7
+    user_value 4
     # value_source user
     # Default value: 10
     # Legal values: 4 to 15
@@ -3293,14 +3297,14 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY {
     #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_PREDIV == 8
     #   --> 1
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 336 
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 200
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLL_MUL == 192
     #   --> 0
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV == 2 
     #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_SYSCLK_DIV == 2
     #   --> 1
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 7 
-    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 7
-    #   --> 1
+    #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_PLLQ_DIV == 4
+    #   --> 0
     # Requires:  CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV == 1 
     #     CYGHWR_HAL_CORTEXM_STM32_CLOCK_HCLK_DIV == 1
     #   --> 1

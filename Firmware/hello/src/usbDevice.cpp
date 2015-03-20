@@ -6,6 +6,8 @@
 #include "../usb_otg/inc/usbd_cdc_core.h"
 
 #include "usbDevice.h"
+#include "TermCMD.h"
+#include "utils.h"
 
 usbDevice * usbDevice::__instance = 0;
 
@@ -65,10 +67,13 @@ usbDevice::usbDevice()
 
 
 	mUSBRXlen = 0;
+	mUSBcmdlen = 0;
 	mUSBstatus = unknown;
 
 	cyg_mutex_init(&mUSBmutex);
 	cyg_cond_init(&mUSBrxCond, &mUSBmutex);
+
+
 
 	USBD_Init(&USB_OTG_dev,
 			USB_OTG_FS_CORE_ID,
@@ -336,11 +341,34 @@ cyg_uint16 usbDevice::cdc_DataTx (cyg_uint8* Buf, cyg_uint32 Len)
 void usbDevice::handleData(cyg_uint8* buff, cyg_uint32 len)
 {
 	//Handle data accordingly
+	for(cyg_uint8 k = 0; k < len; k++)
+	{
+		mUSBcmdbuff[mUSBcmdlen] = buff[k];
 
-	diag_printf("USB: %d\n", len);
-	diag_dump_buf(buff, len);
+		if((mUSBcmdbuff[mUSBcmdlen] == '\n') || (mUSBcmdbuff[mUSBcmdlen] == '\r'))
+		{
+			diag_printf("USB: %d\n", mUSBcmdlen);
+			diag_dump_buf(mUSBcmdbuff, mUSBcmdlen);
 
-	//echo received data to UART
+			mUSBcmdbuff[mUSBcmdlen] = 0;
+
+			 char *argv[20];
+			 int argc = 20;
+			util_parse_params((char*)mUSBcmdbuff,argv,argc,' ',' ');
+
+			if ( argc )
+			{
+				TermCMD::process(*(cTerm*)0,argc,argv);
+			}
+
+			mUSBcmdlen = 0xFFFFFFFF;
+		}
+
+		if(++mUSBcmdlen > USBRXBUFF_SIZE)
+			mUSBcmdlen = 0;
+	}
+
+
 }
 
 cyg_uint32 usbDevice::send(cyg_uint8* buff, cyg_uint32 len)
@@ -362,7 +390,7 @@ cyg_uint32 usbDevice::send(cyg_uint8* buff, cyg_uint32 len)
 
 cyg_uint16  usbDevice::cdc_rxData(cyg_uint8* buff, cyg_uint32 len)
 {
-	//diag_printf("RX %d\n", len);
+	diag_printf("RX %d\n", len);
 	if(!__instance)
 		return USBD_FAIL;
 

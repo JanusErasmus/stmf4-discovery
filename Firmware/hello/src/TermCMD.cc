@@ -209,6 +209,7 @@ void TermCMD::process(cTerm & term, int argc,char * argv[])
 
 void TermCMD::help(cTerm & t,int argc,char *argv[])
 {
+
 	t << YELLOW("TermCMD commands:\n");
 
 	cmd_table_t* t_ptr = NULL;

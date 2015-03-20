@@ -5,7 +5,7 @@
 //Stack and thread definitions
 #define INIT_PRIORITY		19
 #define LED_PRIORITY		18
-#define USB_PRIORITY		20
+#define USB_PRIORITY		25
 #define TERM_PRIORITY		25
 
 //Stack thread sizes
