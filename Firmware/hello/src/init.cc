@@ -71,38 +71,38 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 			{ CYGHWR_HAL_STM32_GPIO(D, 14, GPIO_OUT, 0, PUSHPULL, NONE, 2MHZ)},
 	};
 	cLED::init(ledPinNumbers, 4);
-//
-//	dogLCD lcd;
-//	lcd << "Hello";
-//
+
+	dogLCD lcd;
+	lcd << "Hello";
+
 	// Initialize the Terminal
 	uartTerm::init("/dev/tty1",128,"discRTC>>");
 	usbTerm::init(128, "discRTC>>");
-//
-//	//initButton();
-//
-//	char string[16];
-//
-//	lcd.setLine(2);
-//	time_t now = time(NULL);
-//	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
-//	lcd << string;
-//
-//	lcd.setLine(3);
-//	lcd << "Line 3";
-//
-//	lcd.setLine(4);
-//		lcd << "Line 4";
+	//
+	//	//initButton();
+	//
+	char string[16];
+
+	lcd.setLine(2);
+	time_t now = time(NULL);
+	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
+	lcd << string;
+
+	lcd.setLine(3);
+	lcd << "Line 3";
+
+	lcd.setLine(4);
+	lcd << "Line 4";
 
 
 	for (;;)
 	{
 		cyg_thread_delay(100);
-//		lcd.setLine(1);
-//		lcd << "Time ";
-//		now = time(NULL);
-//		strftime(string, 16, "%H:%M:%S", localtime(&now));
-//		lcd << string;
+		lcd.setLine(1);
+		lcd << "Time ";
+		now = time(NULL);
+		strftime(string, 16, "%H:%M:%S", localtime(&now));
+		lcd << string;
 
 
 	}
