@@ -3,10 +3,11 @@
 #include <cyg/kernel/kapi.h>
 
 #include "definitions.h"
+#include "term.h"
 
-#define USBRXBUFF_SIZE 64
+#define USBRXBUFF_SIZE 128
 
-class usbDevice
+class usbTerm : public cTerm
 {
 public:
 	enum eUSBstate
@@ -19,12 +20,13 @@ public:
 	};
 
 private:
-	static usbDevice * __instance;
+	static usbTerm * __instance;
 
 	cyg_uint8 mRXStack[USB_STACK_SIZE];
 	cyg_thread mRXThread;
 	cyg_handle_t mRXThreadHandle;
 
+	bool mBannerFlag;
 
 	eUSBstate mUSBstatus;
 
@@ -33,16 +35,17 @@ private:
 
 	cyg_uint8 mUSBRXbuff[USBRXBUFF_SIZE];
 	cyg_uint32 mUSBRXlen;
-	cyg_uint8 mUSBcmdbuff[USBRXBUFF_SIZE];
-	cyg_uint32 mUSBcmdlen;
 
-	usbDevice();
+	usbTerm(cyg_uint32 b_size, const char * const prompt_str);
 	static void rx_thread_func(cyg_addrword_t arg);
 	void handleData(cyg_uint8* Buf, cyg_uint32 Len);
 
+	void write(const char * string, cyg_uint32 len);
+	void banner();
+
 public:
-	static void init();
-	static usbDevice* get(){ return __instance; };
+	static void init(cyg_uint32 b_size, const char * const prompt_str);
+	static usbTerm* get(){ return __instance; };
 
 	//USB device function call backs
 	static void     USBD_USR_Init(void);
@@ -68,7 +71,7 @@ public:
 	cyg_uint32 send(cyg_uint8* buff, cyg_uint32 len);
 
 
-	virtual ~usbDevice();
+	virtual ~usbTerm();
 };
 
 #endif /* USBTHREAD_H_ */

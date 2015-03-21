@@ -1,47 +1,32 @@
 #ifndef _TERM_H_
 #define _TERM_H_
-#include <cyg/kernel/kapi.h>
-#include <cyg/hal/hal_arch.h>
-#include <cyg/io/io.h>
-
-#include "definitions.h"
 
 class cTerm
 {
-private:
-    static cTerm * __instance;
-    cyg_uint32 mRxIdx;
-    cyg_uint32 mBuffSize;
-    cyg_io_handle_t mDevHandle;
-    char * mDev;
-    char * mRxBuff;
-    char * mPrevBuff;
+	char mTempBuf[128];
+
+protected:
     const char * mPrompt;
+    char * mCMDbuff;
+    cyg_uint32 mCMDidx;
 
-    cyg_uint8 mStack[TERM_STACK_SIZE];
-    cyg_thread mThread;
-    cyg_handle_t mThreadHandle;
-
-    void banner();
-    cyg_bool wasArrow();
-    void process_command_line();
     void prompt();
-    void run(void);
-    static void term_thread_func(cyg_addrword_t arg);
-    cTerm(char * dev,cyg_uint32 b_size,const char * const prompt_str);
-
-    //VT100
-    bool isVT100();
 
 public:
-    static void init(char * dev,cyg_uint32 b_size,const char * const prompt_str);
+    cTerm(cyg_uint32 b_size, const char * const prompt_str);
+    virtual ~cTerm();
+
     cTerm& operator<<(void *);
     cTerm& operator<<(const char *);
     cTerm& operator<<(int);
     cTerm& operator<<(unsigned int);
     cTerm& operator<<(unsigned char);
+
     char * format(const char *f,...);
-    virtual ~cTerm();
+
+    virtual void banner() = 0;
+    virtual void write(const char * string, cyg_uint32 len) = 0;
+
 };
 
 #endif  //Include Guard

@@ -8,15 +8,15 @@
 #include "utils.h"
 #include "F4_RTC.h"
 
-void showThread();
-void showUsage();
+void showThread(cTerm & t);
+void showUsage(cTerm & t);
 
 void System::handle(cTerm & t,int argc,char *argv[])
 {
 	if (!strcmp(argv[0],"dt"))
 	{
-		showThread();
-		showUsage();
+		showThread(t);
+		showUsage(t);
 	}
 
 	if(!strcmp(argv[0],"time"))
@@ -61,7 +61,7 @@ void System::handle(cTerm & t,int argc,char *argv[])
 }
 
 
-void showUsage()
+void showUsage(cTerm & t)
 {
 	extern cyg_uint32  __rom_data_start;	//diag_printf("ROMstart 0x%08X\n",(cyg_uint32)&__rom_data_start);
 
@@ -76,27 +76,27 @@ void showUsage()
 	cyg_uint32 total_rom = text_size + data_size + bss_size;
 	cyg_uint32 usage = ((total_rom*100)/(0x100000-0x180));
 
-	printf(GREEN("\nTotal ROM: %d\n"), total_rom);
-	printf(" .text = %d\n", text_size);
-	printf(" .data = %d\n", data_size);
-	printf(" .bss  = %d\n", bss_size);
-	printf("        %d%%\n\n", usage);
+	t << t.format(GREEN("\nTotal ROM: %d\n"), total_rom);
+	t << t.format(" .text = %d\n", text_size);
+	t << t.format(" .data = %d\n", data_size);
+	t << t.format(" .bss  = %d\n", bss_size);
+	t << t.format("        %d%%\n\n", usage);
 
-	printf(GREEN("Total RAM:\n"));
-	printf(" heap = %d\n", heap_info.arena);
-	printf(" Used = %d\n",heap_info.usmblks+heap_info.uordblks);
-	printf("        %d%%\n",(((heap_info.usmblks+heap_info.uordblks)*100)/heap_info.arena));
+	t << t.format(GREEN("Total RAM:\n"));
+	t << t.format(" heap = %d\n", heap_info.arena);
+	t << t.format(" Used = %d\n",heap_info.usmblks+heap_info.uordblks);
+	t << t.format("        %d%%\n",(((heap_info.usmblks+heap_info.uordblks)*100)/heap_info.arena));
 
 }
 
-void showThread()
+void showThread(cTerm & t)
 {
 	cyg_handle_t thread = 0;
 	cyg_uint16 id;
 	cyg_thread_info info;
 	bool flag = 0;
 
-	printf(GREEN("ID %15s%6s%12s%12s%5s\n"), "Name", "Prior", "S_size", "Used", "Perc");
+	t << t.format(GREEN("ID %15s%6s%12s%12s%5s\n"), "Name", "Prior", "S_size", "Used", "Perc");
 
 	while ( cyg_thread_get_next(&thread,&id) )
 	{
@@ -106,9 +106,9 @@ void showThread()
 		}
 
 		if(flag)
-			printf("%02d%16s%6d  0x%08X  0x%08X%5d\n", info.id, info.name, info.set_pri, info.stack_size, info.stack_used, (int)((info.stack_used*100)/info.stack_size));
+			t << t.format("%02d%16s%6d  0x%08X  0x%08X%5d\n", info.id, info.name, info.set_pri, info.stack_size, info.stack_used, (int)((info.stack_used*100)/info.stack_size));
 		else
-			printf(CYAN("%02d%16s%6d  0x%08X  0x%08X%5d\n"), info.id, info.name, info.set_pri, info.stack_size, info.stack_used, (int)((info.stack_used*100)/info.stack_size));
+			t << t.format(CYAN("%02d%16s%6d  0x%08X  0x%08X%5d\n"), info.id, info.name, info.set_pri, info.stack_size, info.stack_used, (int)((info.stack_used*100)/info.stack_size));
 
 		flag = !flag;
 	}
@@ -116,7 +116,7 @@ void showThread()
 
 void System::reset(cTerm & t, int argc, char *argv[])
 {
-	diag_printf("Device will now RESET\n");
+	t << "Device will now RESET\n";
 
 	cyg_thread_delay(100);
 	cyg_scheduler_lock();
@@ -132,32 +132,32 @@ void System::setTime(cTerm & term, int argc,char * argv[])
 		yy = strtoul(argv[1],NULL,10);
 		if(yy < 1900)
 			return;
-		//term << term.format("yy : %d\n", yy);
+		term << term.format("yy : %d\n", yy);
 
 		mm = strtoul(argv[2],NULL,10);
 		if(mm > 12)
 			return;
-		//term << term.format("mm : %d\n", mm);
+		term << term.format("mm : %d\n", mm);
 
 		dd = strtoul(argv[3],NULL,10);
 		if(dd > 31)
 			return;
-		//term << term.format("dd : %d\n", dd);
+		term << term.format("dd : %d\n", dd);
 
 		h = strtoul(argv[4],NULL,10);
 		if(h > 24)
 			return;
-		//term << term.format("h  : %d\n", h);
+		term << term.format("h  : %d\n", h);
 
 		m = strtoul(argv[5],NULL,10);
 		if(m > 60)
 			return;
-		//term << term.format("m  : %d\n", m);
+		term << term.format("m  : %d\n", m);
 
 		s = strtoul(argv[6],NULL,10);
 		if(s > 60)
 			return;
-		//term << term.format("s  : %d\n", s);
+		term << term.format("s  : %d\n", s);
 
 		bool status = F4RTC::setTime(yy - 1900, mm - 1, dd, h, m, s);
 
@@ -171,9 +171,9 @@ void System::setTime(cTerm & term, int argc,char * argv[])
 //		info.tm_sec = s;
 //		timeVal = mktime(&info);
 		if(status)
-				term<<GREEN("Updated time\n");
+				term << GREEN("Updated time\n");
 		else
-			term<<RED("Could not update time\n");
+			term << RED("Could not update time\n");
 	}
 	else
 	{
@@ -196,7 +196,6 @@ void TermCMD::process(cTerm & term, int argc,char * argv[])
 		if(!t_ptr->cmd)
 			break;
 
-
 		if(t_ptr->f && !strcmp(argv[0],t_ptr->cmd))
 		{
 			t_ptr->f(term, argc, argv);
@@ -215,25 +214,25 @@ void TermCMD::help(cTerm & t,int argc,char *argv[])
 	cmd_table_t* t_ptr = NULL;
 	char txt[16];
 
-		int k = 0;
-		do
+	int k = 0;
+	do
+	{
+		t_ptr = &mCmdTable[k++];
+		if(!t_ptr->cmd)
+			break;
+
+		if(t_ptr->f)
 		{
-			t_ptr = &mCmdTable[k++];
-			if(!t_ptr->cmd)
-				break;
+			sprintf(txt,"%s %s", t_ptr->cmd, t_ptr->argDesc);
+			t <<"  "<< t.format(CYAN("%-10s "),txt) << t.format("- %s\n",t_ptr->desc);
+		}
+		else
+		{
+			//this is a caption
+			t << t.format("%s\n", t_ptr->cmd);
+		}
 
-			if(t_ptr->f)
-			{
-				sprintf(txt,"%s %s", t_ptr->cmd, t_ptr->argDesc);
-				t<<"  "<<t.format(CYAN("%-10s "),txt)<<t.format("- %s\n",t_ptr->desc);
-			}
-			else
-			{
-				//this is a caption
-				t << t.format("%s\n", t_ptr->cmd);
-			}
-
-		}while(t_ptr->cmd);
+	}while(t_ptr->cmd);
 
 }
 

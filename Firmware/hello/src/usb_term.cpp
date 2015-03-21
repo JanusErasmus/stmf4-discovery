@@ -5,11 +5,11 @@
 #include "../usb_dev/inc/usbd_desc.h"
 #include "../usb_otg/inc/usbd_cdc_core.h"
 
-#include "usbDevice.h"
 #include "TermCMD.h"
+#include "usb_term.h"
 #include "utils.h"
 
-usbDevice * usbDevice::__instance = 0;
+usbTerm * usbTerm::__instance = 0;
 
 __ALIGN_BEGIN USB_OTG_CORE_HANDLE    USB_OTG_dev __ALIGN_END ;
 extern  USBD_DEVICE USR_desc;
@@ -23,39 +23,41 @@ extern cyg_uint32 APP_Rx_ptr_in;    /* Increment this pointer or roll it back to
 
 CDC_IF_Prop_TypeDef cdc_fops =
 {
-		usbDevice::cdc_Init,
-		usbDevice::cdc_DeInit,
-		usbDevice::cdc_Ctrl,
-		usbDevice::cdc_DataTx,
-		usbDevice::cdc_rxData
+		usbTerm::cdc_Init,
+		usbTerm::cdc_DeInit,
+		usbTerm::cdc_Ctrl,
+		usbTerm::cdc_DataTx,
+		usbTerm::cdc_rxData
 };
 
 USBD_Usr_cb_TypeDef USR_cb =
 {
-		usbDevice::USBD_USR_Init,
-		usbDevice::USBD_USR_DeviceReset,
-		usbDevice::USBD_USR_DeviceConfigured,
-		usbDevice::USBD_USR_DeviceSuspended,
-		usbDevice::USBD_USR_DeviceResumed,
+		usbTerm::USBD_USR_Init,
+		usbTerm::USBD_USR_DeviceReset,
+		usbTerm::USBD_USR_DeviceConfigured,
+		usbTerm::USBD_USR_DeviceSuspended,
+		usbTerm::USBD_USR_DeviceResumed,
 
-		usbDevice::USBD_USR_DeviceConnected,
-		usbDevice::USBD_USR_DeviceDisconnected,
+		usbTerm::USBD_USR_DeviceConnected,
+		usbTerm::USBD_USR_DeviceDisconnected,
 
 };
 
 
-void usbDevice::init()
+void usbTerm::init(cyg_uint32 b_size, const char * const prompt_str)
 {
 	if(!__instance)
 	{
-		__instance = new usbDevice();
+		__instance = new usbTerm(b_size, prompt_str);
 	}
 }
 
-usbDevice::usbDevice()
+usbTerm::usbTerm(cyg_uint32 b_size, const char * const prompt_str) : cTerm(b_size, prompt_str)
 {
+	mBannerFlag = false;
+
 	cyg_thread_create(USB_PRIORITY,
-			usbDevice::rx_thread_func,
+			usbTerm::rx_thread_func,
 			(cyg_addrword_t)this,
 			(char *)"usbThread",
 			mRXStack,
@@ -67,7 +69,7 @@ usbDevice::usbDevice()
 
 
 	mUSBRXlen = 0;
-	mUSBcmdlen = 0;
+	mCMDidx = 0;
 	mUSBstatus = unknown;
 
 	cyg_mutex_init(&mUSBmutex);
@@ -83,7 +85,7 @@ usbDevice::usbDevice()
 
 }
 
-void usbDevice::rx_thread_func(cyg_addrword_t arg)
+void usbTerm::rx_thread_func(cyg_addrword_t arg)
 {
 	diag_printf("USB started\n");
 
@@ -109,7 +111,7 @@ void usbDevice::rx_thread_func(cyg_addrword_t arg)
  * @param  None
  * @retval None
  */
-void  usbDevice::USBD_USR_Init(void)
+void  usbTerm::USBD_USR_Init(void)
 {
 	diag_printf("USB: USR init\n");
 }
@@ -120,7 +122,7 @@ void  usbDevice::USBD_USR_Init(void)
  * @param  speed : device speed
  * @retval None
  */
-void  usbDevice::USBD_USR_DeviceReset(cyg_uint8 speed )
+void  usbTerm::USBD_USR_DeviceReset(cyg_uint8 speed )
 {
 	//	switch (speed)
 	//	{
@@ -146,7 +148,7 @@ void  usbDevice::USBD_USR_DeviceReset(cyg_uint8 speed )
  * @param  None
  * @retval Staus
  */
-void  usbDevice::USBD_USR_DeviceConfigured (void)
+void  usbTerm::USBD_USR_DeviceConfigured (void)
 {
 	if(__instance)
 		__instance->setUSBstate(configured);
@@ -158,7 +160,7 @@ void  usbDevice::USBD_USR_DeviceConfigured (void)
  * @param  None
  * @retval None
  */
-void  usbDevice::USBD_USR_DeviceSuspended(void)
+void  usbTerm::USBD_USR_DeviceSuspended(void)
 {
 	if(__instance)
 		__instance->setUSBstate(suspended);
@@ -171,7 +173,7 @@ void  usbDevice::USBD_USR_DeviceSuspended(void)
  * @param  None
  * @retval None
  */
-void  usbDevice::USBD_USR_DeviceResumed(void)
+void  usbTerm::USBD_USR_DeviceResumed(void)
 {
 	if(__instance)
 		__instance->setUSBstate(resumed);
@@ -183,7 +185,7 @@ void  usbDevice::USBD_USR_DeviceResumed(void)
  * @param  None
  * @retval Staus
  */
-void  usbDevice::USBD_USR_DeviceConnected (void)
+void  usbTerm::USBD_USR_DeviceConnected (void)
 {
 	diag_printf("USB: Device Connected.\n");
 }
@@ -195,7 +197,7 @@ void  usbDevice::USBD_USR_DeviceConnected (void)
  * @param  None
  * @retval Staus
  */
-void  usbDevice::USBD_USR_DeviceDisconnected (void)
+void  usbTerm::USBD_USR_DeviceDisconnected (void)
 {
 	diag_printf("USB: Device Disconnected.\n");
 }
@@ -206,7 +208,7 @@ void  usbDevice::USBD_USR_DeviceDisconnected (void)
  * @param  None
  * @retval Result of the opeartion (USBD_OK in all cases)
  */
-cyg_uint16 usbDevice::cdc_Init()
+cyg_uint16 usbTerm::cdc_Init()
 {
 	diag_printf("USB: CDC initialized\n");
 
@@ -214,7 +216,7 @@ cyg_uint16 usbDevice::cdc_Init()
 }
 
 
-cyg_uint16 usbDevice::cdc_DeInit(void)
+cyg_uint16 usbTerm::cdc_DeInit(void)
 {
 	diag_printf("CDC De- initialized\n");
 
@@ -246,10 +248,9 @@ LINE_CODING linecoding =
  * @retval Result of the opeartion (USBD_OK in all cases
  */
 //not really necessary for this example
-cyg_uint16 usbDevice::cdc_Ctrl (cyg_uint32 Cmd, cyg_uint8* Buf, cyg_uint32 Len)
+cyg_uint16 usbTerm::cdc_Ctrl (cyg_uint32 Cmd, cyg_uint8* Buf, cyg_uint32 Len)
 {
 	diag_printf("cdc_Ctrl %02X, len %d\n", Cmd, Len);
-
 
 	switch (Cmd)
 	{
@@ -281,6 +282,12 @@ cyg_uint16 usbDevice::cdc_Ctrl (cyg_uint32 Cmd, cyg_uint8* Buf, cyg_uint32 Len)
 		linecoding.datatype = Buf[6];
 		/* Set the new configuration */
 
+		if(__instance && !(__instance->mBannerFlag))
+		{
+			__instance->mBannerFlag = true;
+			__instance->banner();
+		}
+
 		break;
 
 	case GET_LINE_CODING:
@@ -292,6 +299,7 @@ cyg_uint16 usbDevice::cdc_Ctrl (cyg_uint32 Cmd, cyg_uint8* Buf, cyg_uint32 Len)
 		Buf[4] = linecoding.format;
 		Buf[5] = linecoding.paritytype;
 		Buf[6] = linecoding.datatype;
+
 		break;
 
 	case SET_CONTROL_LINE_STATE:
@@ -318,7 +326,7 @@ cyg_uint16 usbDevice::cdc_Ctrl (cyg_uint32 Cmd, cyg_uint8* Buf, cyg_uint32 Len)
  * @param  Len: Number of data to be sent (in bytes)
  * @retval Result of the opeartion: USBD_OK
  */
-cyg_uint16 usbDevice::cdc_DataTx (cyg_uint8* Buf, cyg_uint32 Len)
+cyg_uint16 usbTerm::cdc_DataTx (cyg_uint8* Buf, cyg_uint32 Len)
 {
 	cyg_uint32 i;
 	//loop through buffer
@@ -338,59 +346,85 @@ cyg_uint16 usbDevice::cdc_DataTx (cyg_uint8* Buf, cyg_uint32 Len)
 	return USBD_OK;
 }
 
-void usbDevice::handleData(cyg_uint8* buff, cyg_uint32 len)
+void usbTerm::handleData(cyg_uint8* buff, cyg_uint32 len)
 {
 	//Handle data accordingly
 	for(cyg_uint8 k = 0; k < len; k++)
 	{
-		mUSBcmdbuff[mUSBcmdlen] = buff[k];
+		mCMDbuff[mCMDidx] = buff[k];
+		send(&buff[k], 1);
 
-		if((mUSBcmdbuff[mUSBcmdlen] == '\n') || (mUSBcmdbuff[mUSBcmdlen] == '\r'))
+		if((mCMDbuff[mCMDidx] == '\n') || (mCMDbuff[mCMDidx] == '\r'))
 		{
-			diag_printf("USB: %d\n", mUSBcmdlen);
-			diag_dump_buf(mUSBcmdbuff, mUSBcmdlen);
+			//diag_printf("USB: %d\n", mUSBcmdlen);
+			//diag_dump_buf(mRxBuff, mUSBcmdlen);
 
-			mUSBcmdbuff[mUSBcmdlen] = 0;
+			mCMDbuff[mCMDidx] = 0;
 
 			 char *argv[20];
 			 int argc = 20;
-			util_parse_params((char*)mUSBcmdbuff,argv,argc,' ',' ');
+			util_parse_params(mCMDbuff,argv,argc,' ',' ');
 
 			if ( argc )
 			{
-				TermCMD::process(*(cTerm*)0,argc,argv);
+				TermCMD::process(*(this),argc,argv);
 			}
 
-			mUSBcmdlen = 0xFFFFFFFF;
+			prompt();
+
+			mCMDidx = 0xFFFFFFFF;
 		}
 
-		if(++mUSBcmdlen > USBRXBUFF_SIZE)
-			mUSBcmdlen = 0;
+		if(++mCMDidx > USBRXBUFF_SIZE)
+			mCMDidx = 0;
+
 	}
-
-
 }
 
-cyg_uint32 usbDevice::send(cyg_uint8* buff, cyg_uint32 len)
+void usbTerm::write(const char * string, cyg_uint32 len)
+{
+	send((cyg_uint8*)string, len);
+}
+
+void usbTerm::banner()
+{
+    *this<<"Terminal started on USB FS as STMicroelectronics Virtual COM port\r\n";
+}
+
+cyg_uint32 usbTerm::send(cyg_uint8* buff, cyg_uint32 len)
 {
 	if(mUSBstatus != configured)
 		return 0;
 
+	cyg_uint32 idx = 0;
+	cyg_uint8 transmitBuffer[128];
+	for(cyg_uint8 k = 0; k < len; k++)
+	{
+		transmitBuffer[idx++] = buff[k] ;
+		if(buff[k] == '\n')
+		{
+			transmitBuffer[idx++] = '\r';
+		}
+		if(buff[k] == '\r')
+		{
+			transmitBuffer[idx++] = '\n';
+		}
+	}
 
 	//diag_printf("USB TX: %d\n", len);
 	//diag_dump_buf(sFrame_buff, sFrame_len);
 
-	if( cdc_DataTx(buff, len) == USBD_OK)
-		return len;
+	if( cdc_DataTx(transmitBuffer, idx) == USBD_OK)
+		return idx;
 
 	diag_printf("Could not send data\n");
 
 	return 0;
 }
 
-cyg_uint16  usbDevice::cdc_rxData(cyg_uint8* buff, cyg_uint32 len)
+cyg_uint16  usbTerm::cdc_rxData(cyg_uint8* buff, cyg_uint32 len)
 {
-	diag_printf("RX %d\n", len);
+	//diag_printf("RX %d\n", len);
 	if(!__instance)
 		return USBD_FAIL;
 
@@ -408,13 +442,7 @@ cyg_uint16  usbDevice::cdc_rxData(cyg_uint8* buff, cyg_uint32 len)
 	return USBD_OK;
 }
 
-//void setUSBstate(cyg_uint8 state)
-//{
-//	if(usbThread::get())
-//		usbThread::get()->setUSBstate((usbThread::eUSBstate)state);
-//}
-
-void usbDevice::setUSBstate(usbDevice::eUSBstate state)
+void usbTerm::setUSBstate(usbTerm::eUSBstate state)
 {
 	//diag_printf("Setting state %d\n", state);
 	switch(state)
@@ -423,6 +451,7 @@ void usbDevice::setUSBstate(usbDevice::eUSBstate state)
 	case reset:
 	{
 		diag_printf("USB: Reset\n");
+		mBannerFlag = false;
 	}
 	break;
 	case configured:
@@ -433,6 +462,7 @@ void usbDevice::setUSBstate(usbDevice::eUSBstate state)
 	case suspended:
 	{
 		diag_printf("USB: Suspend Mode.\n");
+		mBannerFlag = false;
 	}
 	break;
 	case resumed:
@@ -448,7 +478,7 @@ void usbDevice::setUSBstate(usbDevice::eUSBstate state)
 }
 
 
-usbDevice::~usbDevice()
+usbTerm::~usbTerm()
 {
 }
 

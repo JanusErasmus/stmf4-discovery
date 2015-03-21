@@ -4,13 +4,13 @@
 #include <stdlib.h>
 
 #include "definitions.h"
-#include "term.h"
+#include "uart_term.h"
 #include "utils.h"
 #include "init.h"
 #include "led.h"
 #include "F4_RTC.h"
 #include "dog_LCD.h"
-#include "usbDevice.h"
+#include "usb_term.h"
 
 cInit * cInit::__instance = NULL;
 
@@ -45,6 +45,8 @@ cInit::cInit()
                       &mThreadHandle,
                       &mThread);
     cyg_thread_resume(mThreadHandle);
+
+    mPDx_IntHandle = 0;
 }
 /**
  * The main thread function for the system. The whole show
@@ -57,11 +59,10 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 
 	CYGHWR_HAL_STM32_GPIO_SET(CYGHWR_HAL_STM32_GPIO(D, 5, GPIO_IN, 0, OPENDRAIN, NONE, 2MHZ));
 
-	usbDevice::init();
-//
-//	if(!F4RTC::init())
-//		diag_printf(RED("RTC NOT initialized\n"));
-//
+
+	if(!F4RTC::init())
+		diag_printf(RED("RTC NOT initialized\n"));
+
 	cLED::ledPins_s ledPinNumbers[] = //no pin is 0xFF
 	{
 			{ CYGHWR_HAL_STM32_GPIO(D, 13, GPIO_OUT, 0, PUSHPULL, NONE, 2MHZ)},
@@ -75,7 +76,8 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 //	lcd << "Hello";
 //
 	// Initialize the Terminal
-	cTerm::init((char *)"/dev/tty1",128,"discRTC>>");
+	uartTerm::init("/dev/tty1",128,"discRTC>>");
+	usbTerm::init(128, "discRTC>>");
 //
 //	//initButton();
 //
@@ -108,15 +110,15 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 
 void cInit::initButton()
 {
-	/*cyg_interrupt_mask(CYGNUM_HAL_INTERRUPT_EXTI0);
+	cyg_interrupt_mask(CYGNUM_HAL_INTERRUPT_EXTI0);
 	cyg_interrupt_create(CYGNUM_HAL_INTERRUPT_EXTI0,
 			7,
 			(cyg_addrword_t)0,
 			handleISR,
 			handleDSR,
-			mPDx_IntHandle,
-			mPDx_Interrupt);
+			&mPDx_IntHandle,
+			&mPDx_Interrupt);
 
 	cyg_interrupt_attach(mPDx_IntHandle);
-	cyg_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EXTI0);*/
+	cyg_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EXTI0);
 }
