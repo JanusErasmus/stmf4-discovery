@@ -15,8 +15,6 @@ class cInit
 
 	cyg_interrupt mPDx_Interrupt;
 	cyg_handle_t mPDx_IntHandle;
-	static cyg_uint32 handleISR(cyg_vector_t vector,cyg_addrword_t data);
-	static void handleDSR(cyg_vector_t vector,cyg_uint32 count,cyg_addrword_t data);
 
 	cInit();
 	void initButton();

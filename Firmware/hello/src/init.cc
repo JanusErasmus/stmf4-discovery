@@ -11,6 +11,7 @@
 #include "F4_RTC.h"
 #include "dog_LCD.h"
 #include "usb_term.h"
+#include "input_port.h"
 
 cInit * cInit::__instance = NULL;
 
@@ -78,9 +79,7 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	// Initialize the Terminal
 	uartTerm::init("/dev/tty1",128,"discRTC>>");
 	usbTerm::init(128, "discRTC>>");
-	//
-	//	//initButton();
-	//
+
 	char string[16];
 
 	lcd.setLine(2);
@@ -94,6 +93,12 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	lcd.setLine(4);
 	lcd << "Line 4";
 
+	cyg_uint32 portSpec[] = {
+			//CYGHWR_HAL_STM32_GPIO(A, 0, GPIO_IN, 0, OPENDRAIN, NONE, 2MHZ),
+			 CYGHWR_HAL_STM32_PIN_IN(A, 0, FLOATING),
+	};
+	cInput::init( portSpec, 1);
+	cInput::get()->start();
 
 	for (;;)
 	{
@@ -103,22 +108,6 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 		now = time(NULL);
 		strftime(string, 16, "%H:%M:%S", localtime(&now));
 		lcd << string;
-
-
 	}
 }
 
-void cInit::initButton()
-{
-	cyg_interrupt_mask(CYGNUM_HAL_INTERRUPT_EXTI0);
-	cyg_interrupt_create(CYGNUM_HAL_INTERRUPT_EXTI0,
-			7,
-			(cyg_addrword_t)0,
-			handleISR,
-			handleDSR,
-			&mPDx_IntHandle,
-			&mPDx_Interrupt);
-
-	cyg_interrupt_attach(mPDx_IntHandle);
-	cyg_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EXTI0);
-}
