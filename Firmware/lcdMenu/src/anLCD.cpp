@@ -6,7 +6,7 @@
 #include <cyg/io/ttyio.h>
 #include <stdio.h>
 
-#include "dog_LCD.h"
+#include "anLCD.h"
 
 #define LCD_RS	CYGHWR_HAL_STM32_GPIO(B, 10, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
 #define LCD_RW	CYGHWR_HAL_STM32_GPIO(B, 14, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
@@ -20,9 +20,9 @@
 #define LCD_DB6 CYGHWR_HAL_STM32_GPIO(E, 14, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
 #define LCD_DB7 CYGHWR_HAL_STM32_GPIO(E, 15, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
 
-bool dogLCD::mInitialized = false;
+bool alphaNumericLCD::mInitialized = false;
 
-dogLCD::dogLCD()
+alphaNumericLCD::alphaNumericLCD()
 {
 	if(!mInitialized)
 	{
@@ -52,7 +52,7 @@ dogLCD::dogLCD()
 	}
 }
 
-void dogLCD::initLCM()
+void alphaNumericLCD::initLCM()
 {
 	cyg_thread_delay(2);
 
@@ -71,13 +71,13 @@ void dogLCD::initLCM()
 	writeIntruction(0x0C);
 }
 
-void dogLCD::clear()
+void alphaNumericLCD::clear()
 {
 	writeIntruction(0x01);
 	cyg_thread_delay(1);
 }
 
-void dogLCD::setLine(cyg_uint8 line)
+void alphaNumericLCD::setLine(cyg_uint8 line)
 {
 	switch(line)
 	{
@@ -101,7 +101,7 @@ void dogLCD::setLine(cyg_uint8 line)
 
 }
 
-void dogLCD::setDBpins(cyg_uint8 data)
+void alphaNumericLCD::setDBpins(cyg_uint8 data)
 {
 	cyg_uint32 reg32;
 	HAL_READ_UINT32(CYGHWR_HAL_STM32_GPIOE + CYGHWR_HAL_STM32_GPIO_ODR , reg32);
@@ -110,7 +110,7 @@ void dogLCD::setDBpins(cyg_uint8 data)
 	HAL_WRITE_UINT32(CYGHWR_HAL_STM32_GPIOE + CYGHWR_HAL_STM32_GPIO_ODR , reg32);
 }
 
-void dogLCD::writeIntruction(cyg_uint8 instruction)
+void alphaNumericLCD::writeIntruction(cyg_uint8 instruction)
 {
 	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RS, 0);
 	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RW, 0);
@@ -126,7 +126,7 @@ void dogLCD::writeIntruction(cyg_uint8 instruction)
 	CYGHWR_HAL_STM32_GPIO_OUT (LCD_E, 1);
 }
 
-char * dogLCD::format(const char *f,...)
+char * alphaNumericLCD::format(const char *f,...)
 {
     va_list vl;
     va_start(vl,f);
@@ -136,7 +136,7 @@ char * dogLCD::format(const char *f,...)
     return mString;
 }
 
-dogLCD& dogLCD::operator <<(const char *str)
+alphaNumericLCD& alphaNumericLCD::operator <<(const char *str)
 {
     cyg_uint32 len = strlen(str);
 
@@ -146,7 +146,7 @@ dogLCD& dogLCD::operator <<(const char *str)
     return(*this);
 }
 
-void dogLCD::putc(const char c)
+void alphaNumericLCD::putc(const char c)
 {
 	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RS, 1);
 	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RW, 0);
@@ -164,7 +164,7 @@ void dogLCD::putc(const char c)
 
 }
 
-dogLCD::~dogLCD() {
+alphaNumericLCD::~alphaNumericLCD() {
 	// TODO Auto-generated destructor stub
 }
 

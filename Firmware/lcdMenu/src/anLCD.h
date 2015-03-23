@@ -1,7 +1,7 @@
-#ifndef SRC_DOG_LCD_H_
-#define SRC_DOG_LCD_H_
+#ifndef SRC_ANLCD_H_
+#define SRC_ANLCD_H_
 
-class dogLCD
+class alphaNumericLCD
 {
 	static bool mInitialized;
 
@@ -13,15 +13,15 @@ class dogLCD
 	void putc(const char c);
 
 public:
-	dogLCD();
-	virtual ~dogLCD();
+	alphaNumericLCD();
+	virtual ~alphaNumericLCD();
 
 	void clear();
 	void setLine(cyg_uint8 line);
 
-	dogLCD& operator<<(const char *);
+	alphaNumericLCD& operator<<(const char *);
 	char * format(const char *f,...);
 
 };
 
-#endif /* SRC_DOG_LCD_H_ */
+#endif /* SRC_ANLCD_H_ */

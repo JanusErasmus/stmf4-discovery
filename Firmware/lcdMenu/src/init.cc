@@ -9,6 +9,8 @@
 #include "definitions.h"
 #include "utils.h"
 #include "init.h"
+
+#include "anLCD.h"
 #include "led.h"
 #include "F4_RTC.h"
 #include "input_port.h"
@@ -60,6 +62,7 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 
 	CYGHWR_HAL_STM32_GPIO_SET(CYGHWR_HAL_STM32_GPIO(D, 5, GPIO_IN, 0, OPENDRAIN, NONE, 2MHZ));
 
+
 	if(!F4RTC::init())
 		diag_printf(RED("RTC NOT initialized\n"));
 
@@ -72,10 +75,26 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	};
 	cLED::init(ledPinNumbers, 4);
 
+	alphaNumericLCD lcd;
+	lcd << "Hello";
+
 	// Initialize the Terminals
 	usbTerm::init(128, "discRTC>>");
 	uartTerm::init("/dev/tty1",128,"discRTC>>");
 
+
+	char string[16];
+
+	lcd.setLine(2);
+	time_t now = time(NULL);
+	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
+	lcd << string;
+
+	lcd.setLine(3);
+	lcd << "Line 3";
+
+	lcd.setLine(4);
+	lcd << "Line 4";
 
 	cyg_uint32 portSpec[] = {
 			CYGHWR_HAL_STM32_PIN_IN(A, 0, FLOATING),
@@ -86,6 +105,11 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	for (;;)
 	{
 		cyg_thread_delay(100);
+		lcd.setLine(1);
+		lcd << "Time ";
+		now = time(NULL);
+		strftime(string, 16, "%H:%M:%S", localtime(&now));
+		lcd << string;
 	}
 }
 
