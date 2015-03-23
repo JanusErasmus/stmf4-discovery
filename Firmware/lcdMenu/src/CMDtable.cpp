@@ -13,7 +13,7 @@ TermCMD::cmd_table_t TermCMD::mCmdTable [] =
     {"settime"	, "<yyyy mm dd HH MM SS>",			"Set system time", System::setTime},
     {"reset"	, "",			"Reset processor", System::reset},
 	{"STM32"	,0,0,0},
-	{"pstatus"	, "",			"Reset processor", stm32cpu::pStatus},
+	{"pstatus"	, "",			"List powered peripherals", stm32cpu::pStatus},
 
     {0, 0, 0, 0}
 };

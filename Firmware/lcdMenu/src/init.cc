@@ -17,14 +17,16 @@
 
 cInit * cInit::__instance = NULL;
 
-/**
- * This function is the system init function.
- * It is conctructed in such a way as to be only
- * execute the constructor once, thus only initialising
- * the system once
- *
- * @example cInit::init();
- */
+
+void setDBpins(cyg_uint8 data)
+{
+	cyg_uint32 reg32;
+	HAL_READ_UINT32(CYGHWR_HAL_STM32_GPIOE + CYGHWR_HAL_STM32_GPIO_ODR , reg32);
+	reg32 &= (0xFFFF00FF);
+	reg32 |= data << 8;
+	HAL_WRITE_UINT32(CYGHWR_HAL_STM32_GPIOE + CYGHWR_HAL_STM32_GPIO_ODR , reg32);
+}
+
 void cInit::init()
 {
     if (__instance == NULL) //Allow instance to be creater only once.
@@ -32,11 +34,7 @@ void cInit::init()
         __instance = new cInit();
     }
 }
-/**
- * The private default constructor.
- * The constructor is not callable from outside the class
- * and starts the show by creating the first system thread
- */
+
 cInit::cInit()
 {
     cyg_thread_create(INIT_PRIORITY,
@@ -51,16 +49,11 @@ cInit::cInit()
 
     mPDx_IntHandle = 0;
 }
-/**
- * The main thread function for the system. The whole show
- * gets started from this.
- *
- * @param arg    Pointer to the instance of the cInit class
- */
+
 void cInit::init_thread_func(cyg_addrword_t arg)
 {
 
-	CYGHWR_HAL_STM32_GPIO_SET(CYGHWR_HAL_STM32_GPIO(D, 5, GPIO_IN, 0, OPENDRAIN, NONE, 2MHZ));
+	CYGHWR_HAL_STM32_GPIO_SET(CYGHWR_HAL_STM32_PIN_IN(D, 5, FLOATING));
 
 
 	if(!F4RTC::init())
@@ -75,12 +68,29 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	};
 	cLED::init(ledPinNumbers, 4);
 
-	alphaNumericLCD lcd;
+
+	alphaNumericLCD::s_DataPins lcdPins(
+			LCD_RS,
+			LCD_RW,
+			LCD_E,
+			LCD_DB0,
+			LCD_DB1,
+			LCD_DB2,
+			LCD_DB3,
+			LCD_DB4,
+			LCD_DB5,
+			LCD_DB6,
+			LCD_DB7,
+			setDBpins
+			);
+
+	alphaNumericLCD lcd(lcdPins);
 	lcd << "Hello";
 
 	// Initialize the Terminals
-	usbTerm::init(128, "discRTC>>");
-	uartTerm::init("/dev/tty1",128,"discRTC>>");
+	char * prompt = "lcdMenu>>";
+	usbTerm::init(128, prompt);
+	uartTerm::init("/dev/tty1", 128, prompt);
 
 
 	char string[16];

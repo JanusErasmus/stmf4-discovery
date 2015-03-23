@@ -8,48 +8,58 @@
 
 #include "anLCD.h"
 
-#define LCD_RS	CYGHWR_HAL_STM32_GPIO(B, 10, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_RW	CYGHWR_HAL_STM32_GPIO(B, 14, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_E	CYGHWR_HAL_STM32_GPIO(B, 12, GPIO_OUT, 0, PUSHPULL , NONE, 2MHZ)
-#define LCD_DB0	CYGHWR_HAL_STM32_GPIO(E,  8, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_DB1	CYGHWR_HAL_STM32_GPIO(E,  9, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_DB2	CYGHWR_HAL_STM32_GPIO(E, 10, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_DB3	CYGHWR_HAL_STM32_GPIO(E, 11, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_DB4 CYGHWR_HAL_STM32_GPIO(E, 12, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_DB5 CYGHWR_HAL_STM32_GPIO(E, 13, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_DB6 CYGHWR_HAL_STM32_GPIO(E, 14, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-#define LCD_DB7 CYGHWR_HAL_STM32_GPIO(E, 15, GPIO_OUT, 0, OPENDRAIN , NONE, 2MHZ)
-
 bool alphaNumericLCD::mInitialized = false;
 
-alphaNumericLCD::alphaNumericLCD()
+alphaNumericLCD::alphaNumericLCD(s_DataPins pins)
 {
 	if(!mInitialized)
 	{
 		mInitialized = true;
 
-	CYGHWR_HAL_STM32_CLOCK_ENABLE(CYGHWR_HAL_STM32_CLOCK(AHB1, GPIOE));
-	CYGHWR_HAL_STM32_CLOCK_ENABLE(CYGHWR_HAL_STM32_CLOCK(AHB1, GPIOB));
-	/*RS*/	CYGHWR_HAL_STM32_GPIO_SET ( LCD_RS );
-	/*RW*/	CYGHWR_HAL_STM32_GPIO_SET ( LCD_RW );
-	/*E*/	CYGHWR_HAL_STM32_GPIO_SET ( LCD_E );
+		mPins = pins;
 
-	/*DB0*/ CYGHWR_HAL_STM32_GPIO_SET ( LCD_DB0 );
-	/*DB1*/ CYGHWR_HAL_STM32_GPIO_SET ( LCD_DB1 );
-	/*DB2*/ CYGHWR_HAL_STM32_GPIO_SET ( LCD_DB2 );
-	/*DB3*/ CYGHWR_HAL_STM32_GPIO_SET ( LCD_DB3 );
-	/*DB4*/ CYGHWR_HAL_STM32_GPIO_SET ( LCD_DB4 );
-	/*DB5*/ CYGHWR_HAL_STM32_GPIO_SET ( LCD_DB5 );
-	/*DB6*/ CYGHWR_HAL_STM32_GPIO_SET ( LCD_DB6 );
-	/*DB7*/ CYGHWR_HAL_STM32_GPIO_SET ( LCD_DB7 );
+		powerPorts(mPins);
+		setupPins(mPins);
 
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RS, 0);
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RW, 0);
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_E, 1);
 
-	initLCM();
+		CYGHWR_HAL_STM32_GPIO_OUT (pins.rsPin, 0);
+		CYGHWR_HAL_STM32_GPIO_OUT (pins.rwPin, 0);
+		CYGHWR_HAL_STM32_GPIO_OUT (pins.ePin, 1);
+
+		initLCM();
 
 	}
+}
+
+cyg_uint32 alphaNumericLCD::getAHB1portBit(cyg_uint32 pinSpec)
+{
+	cyg_uint32 portNum = ((pinSpec)&0xF0000) >> 16;
+	return 1 << portNum;
+}
+
+void alphaNumericLCD::powerPorts(s_DataPins pins)
+{
+	cyg_uint32 portEnableReg = 0;
+	HAL_READ_UINT32(CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_AHB1ENR, portEnableReg);
+
+	portEnableReg |= getAHB1portBit(pins.rsPin);
+	portEnableReg |= getAHB1portBit(pins.rwPin);
+	portEnableReg |= getAHB1portBit(pins.ePin);
+
+	for(cyg_uint8 k = 0; k < 8; k++)
+		portEnableReg |= getAHB1portBit( pins.dbPins[k] );
+
+	HAL_WRITE_UINT32(CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_AHB1ENR, portEnableReg);
+}
+
+void alphaNumericLCD::setupPins(s_DataPins pins)
+{
+	CYGHWR_HAL_STM32_GPIO_SET ( pins.rsPin );
+	CYGHWR_HAL_STM32_GPIO_SET ( pins.rwPin );
+	CYGHWR_HAL_STM32_GPIO_SET ( pins.ePin );
+
+	for(cyg_uint8 k = 0; k < 8; k++)
+		CYGHWR_HAL_STM32_GPIO_SET ( pins.dbPins[k] );
 }
 
 void alphaNumericLCD::initLCM()
@@ -101,29 +111,24 @@ void alphaNumericLCD::setLine(cyg_uint8 line)
 
 }
 
-void alphaNumericLCD::setDBpins(cyg_uint8 data)
-{
-	cyg_uint32 reg32;
-	HAL_READ_UINT32(CYGHWR_HAL_STM32_GPIOE + CYGHWR_HAL_STM32_GPIO_ODR , reg32);
-	reg32 &= (0xFFFF00FF);
-	reg32 |= data << 8;
-	HAL_WRITE_UINT32(CYGHWR_HAL_STM32_GPIOE + CYGHWR_HAL_STM32_GPIO_ODR , reg32);
-}
 
 void alphaNumericLCD::writeIntruction(cyg_uint8 instruction)
 {
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RS, 0);
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RW, 0);
+	CYGHWR_HAL_STM32_GPIO_OUT (mPins.rsPin, 0);
+	CYGHWR_HAL_STM32_GPIO_OUT (mPins.rwPin, 0);
 
 	HAL_DELAY_US(500);
 
-	setDBpins(instruction);
+	if(mPins.setDBcb)
+		mPins.setDBcb(instruction);
+	else
+		setDBpins(instruction);
 
 	HAL_DELAY_US(500);
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_E, 0);
+	CYGHWR_HAL_STM32_GPIO_OUT (mPins.ePin, 0);
 
 	HAL_DELAY_US(500);
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_E, 1);
+	CYGHWR_HAL_STM32_GPIO_OUT (mPins.ePin, 1);
 }
 
 char * alphaNumericLCD::format(const char *f,...)
@@ -148,23 +153,73 @@ alphaNumericLCD& alphaNumericLCD::operator <<(const char *str)
 
 void alphaNumericLCD::putc(const char c)
 {
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RS, 1);
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_RW, 0);
+	CYGHWR_HAL_STM32_GPIO_OUT (mPins.rsPin, 1);
+	CYGHWR_HAL_STM32_GPIO_OUT (mPins.rwPin, 0);
 
 	HAL_DELAY_US(200);
 
-	setDBpins(c);
+	if(mPins.setDBcb)
+		mPins.setDBcb(c);
+	else
+		setDBpins(c);
 
 	HAL_DELAY_US(200);
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_E, 0);
+	CYGHWR_HAL_STM32_GPIO_OUT (mPins.ePin, 0);
 
 	HAL_DELAY_US(200);
-	CYGHWR_HAL_STM32_GPIO_OUT (LCD_E, 1);
+	CYGHWR_HAL_STM32_GPIO_OUT (mPins.ePin, 1);
 
 
 }
 
+void alphaNumericLCD::setDBpins(cyg_uint8 data)
+{
+	for(cyg_uint8 k = 0; k < 8; k++)
+	{
+		if(data & (1 << k))
+			CYGHWR_HAL_STM32_GPIO_OUT (mPins.dbPins[k], 1);
+		else
+			CYGHWR_HAL_STM32_GPIO_OUT (mPins.dbPins[k], 0);
+	}
+}
+
+alphaNumericLCD::s_DataPins::s_DataPins()
+{
+	rsPin = 0xFFFFFFFF;
+	rwPin = 0xFFFFFFFF;
+	ePin = 0xFFFFFFFF;
+	memset(dbPins, 0xFFFFFFFF, sizeof(cyg_uint32) * 8);
+	setDBcb = 0;
+}
+
+alphaNumericLCD::s_DataPins::s_DataPins(cyg_uint32 rs,
+				cyg_uint32 rw,
+				cyg_uint32 e,
+				cyg_uint32 dbPin0,
+				cyg_uint32 dbPin1,
+				cyg_uint32 dbPin2,
+				cyg_uint32 dbPin3,
+				cyg_uint32 dbPin4,
+				cyg_uint32 dbPin5,
+				cyg_uint32 dbPin6,
+				cyg_uint32 dbPin7,
+				void (*cb)(cyg_uint8 data))
+{
+	rsPin = rs;
+	rwPin = rw;
+	ePin = e;
+	dbPins[0] = dbPin0;
+	dbPins[1] = dbPin1;
+	dbPins[2] = dbPin2;
+	dbPins[3] = dbPin3;
+	dbPins[4] = dbPin4;
+	dbPins[5] = dbPin5;
+	dbPins[6] = dbPin6;
+	dbPins[7] = dbPin7;
+
+	setDBcb = cb;
+}
+
 alphaNumericLCD::~alphaNumericLCD() {
-	// TODO Auto-generated destructor stub
 }
 

@@ -92,217 +92,182 @@ void stm32cpu::sysResetStatus()
 
 void stm32cpu::pStatus(cTerm & term, int argc,char * argv[])
 {
-	diag_printf("Peripheral power status\n");
+	term << term.format("Peripheral power status\n");
 
 		cyg_uint32 reg32 = 0;
-		//TODO HAL_READ_UINT32(CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_AHBENR, reg32);
-		diag_printf(" AHB peripheral clock enable register:\n  - 0x%08X\n", reg32);
-		if(reg32 & CYGHWR_HAL_STM32_RCC_AHBENR_DMA1)
-		{
-			diag_printf("   - DMA1 enabled\n");
-		}
-		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHBENR_DMA2))
-		{
-			diag_printf("   - DMA2 enabled\n");
-		}
-		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHBENR_SRAM))
-		{
-			diag_printf("   - SRAM enabled\n");
-		}
-		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHBENR_FLITF))
-		{
-			diag_printf("   - FLITF enabled\n");
-		}
-		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHBENR_CRC))
-		{
-			diag_printf("   - CRC enabled\n");
-		}
-		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHBENR_FSMC))
-		{
-			diag_printf("   - FSMC enabled\n");
-		}
-		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHBENR_SDIO))
-		{
-			diag_printf("   - SDIO enabled\n");
-		}
-		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHBENR_OTGFS))
-		{
-			diag_printf("   - USB OTG enabled\n");
-		}
-
 		HAL_READ_UINT32(CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_AHB1ENR, reg32);
-		diag_printf(" AHB1 peripheral clock enable register:\n  - 0x%08X\n", reg32);
+		term << term.format(" AHB1 peripheral clock enable register:\n  - 0x%08X\n", reg32);
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_BKPSRAM))
 		{
-			diag_printf("   - Back Up Interface enabled\n");
+			term << term.format("   - Back Up Interface enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_GPIOA))
 		{
-			diag_printf("   - GPIOA enabled\n");
+			term << term.format("   - GPIOA enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_GPIOB))
 		{
-			diag_printf("   - GPIOB enabled\n");
+			term << term.format("   - GPIOB enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_GPIOC))
 		{
-			diag_printf("   - GPIOC enabled\n");
+			term << term.format("   - GPIOC enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_GPIOD))
 		{
-			diag_printf("   - GPIOD enabled\n");
+			term << term.format("   - GPIOD enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_GPIOE))
 		{
-			diag_printf("   - GPIOE enabled\n");
+			term << term.format("   - GPIOE enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_GPIOF))
 		{
-			diag_printf("   - GPIOF enabled\n");
+			term << term.format("   - GPIOF enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_OTGHS))
 		{
-			diag_printf("   - OTG HS enabled\n");
+			term << term.format("   - OTG HS enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB1ENR_OTGHSULPI))
 		{
-			diag_printf("   - OTG HS ULPI enabled\n");
+			term << term.format("   - OTG HS ULPI enabled\n");
 		}
 
 		HAL_READ_UINT32(CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_AHB2ENR, reg32);
-		diag_printf(" AHB2 peripheral clock enable register:\n  - 0x%08X\n", reg32);
+		term << term.format(" AHB2 peripheral clock enable register:\n  - 0x%08X\n", reg32);
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB2ENR_OTGFS))
 		{
-			diag_printf("   - OTG FS enabled\n");
+			term << term.format("   - OTG FS enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_AHB2ENR_RNG))
 		{
-			diag_printf("   - Random Number generator enabled\n");
+			term << term.format("   - Random Number generator enabled\n");
 		}
 
 		HAL_READ_UINT32(CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB1ENR, reg32);
-		diag_printf(" APB1 peripheral clock enable register:\n  - 0x%08X\n", reg32);
+		term << term.format(" APB1 peripheral clock enable register:\n  - 0x%08X\n", reg32);
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_TIM2))
 		{
-			diag_printf("   - Timer2 enabled\n");
+			term << term.format("   - Timer2 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_TIM3))
 		{
-			diag_printf("   - Timer3 enabled\n");
+			term << term.format("   - Timer3 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_TIM4))
 		{
-			diag_printf("   - Timer4 enabled\n");
+			term << term.format("   - Timer4 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_TIM5))
 		{
-			diag_printf("   - Timer5 enabled\n");
+			term << term.format("   - Timer5 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_TIM6))
 		{
-			diag_printf("   - Timer6 enabled\n");
+			term << term.format("   - Timer6 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_TIM7))
 		{
-			diag_printf("   - Timer7 enabled\n");
+			term << term.format("   - Timer7 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_WWDG))
 		{
-			diag_printf("   - Window Watchdog enabled\n");
+			term << term.format("   - Window Watchdog enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_SPI2))
 		{
-			diag_printf("   - SPI2 enabled\n");
+			term << term.format("   - SPI2 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_SPI3))
 		{
-			diag_printf("   - SPI3 enabled\n");
+			term << term.format("   - SPI3 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_UART2))
 		{
-			diag_printf("   - UART2 enabled\n");
+			term << term.format("   - UART2 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_UART3))
 		{
-			diag_printf("   - UART3 enabled\n");
+			term << term.format("   - UART3 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_UART4))
 		{
-			diag_printf("   - UART4 enabled\n");
+			term << term.format("   - UART4 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_UART5))
 		{
-			diag_printf("   - UART5 enabled\n");
+			term << term.format("   - UART5 enabled\n");
 		}
 		if(reg32 & (CYGHWR_HAL_STM32_RCC_APB1ENR_I2C1))
 		{
-			diag_printf("   - I2C1 enabled\n");
+			term << term.format("   - I2C1 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_I2C2))
 		{
-			diag_printf("   - I2C2 enabled\n");
+			term << term.format("   - I2C2 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_CAN1))
 		{
-			diag_printf("   - CAN1 enabled\n");
+			term << term.format("   - CAN1 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_CAN2))
 		{
-			diag_printf("   - CAN2 enabled\n");
+			term << term.format("   - CAN2 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_PWR))
 		{
-			diag_printf("   - Power Interface  enabled\n");
+			term << term.format("   - Power Interface  enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_DAC))
 		{
-			diag_printf("   - DAC enabled\n");
+			term << term.format("   - DAC enabled\n");
 		}
 
 		HAL_READ_UINT32(CYGHWR_HAL_STM32_RCC + CYGHWR_HAL_STM32_RCC_APB2ENR, reg32);
-		diag_printf(" APB2 peripheral clock enable register:\n  - 0x%08X\n", reg32);
+		term << term.format(" APB2 peripheral clock enable register:\n  - 0x%08X\n", reg32);
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_SPI1))
 		{
-			diag_printf("   - SPI1 enabled\n");
+			term << term.format("   - SPI1 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_UART1))
 		{
-			diag_printf("   - UART1 enabled\n");
+			term << term.format("   - UART1 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_UART6))
 		{
-			diag_printf("   - UART6 enabled\n");
+			term << term.format("   - UART6 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_TIM1))
 		{
-			diag_printf("   - TIM1 enabled\n");
+			term << term.format("   - TIM1 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_TIM8))
 		{
-			diag_printf("   - TIM8 enabled\n");
+			term << term.format("   - TIM8 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_TIM9))
 		{
-			diag_printf("   - TIM9 enabled\n");
+			term << term.format("   - TIM9 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_TIM10))
 		{
-			diag_printf("   - TIM10 enabled\n");
+			term << term.format("   - TIM10 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_TIM11))
 		{
-			diag_printf("   - TIM11 enabled\n");
+			term << term.format("   - TIM11 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_ADC1))
 		{
-			diag_printf("   - ADC1 enabled\n");
+			term << term.format("   - ADC1 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_ADC2))
 		{
-			diag_printf("   - ADC2 enabled\n");
+			term << term.format("   - ADC2 enabled\n");
 		}
 		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB2ENR_ADC3))
 		{
-			diag_printf("   - ADC3 enabled\n");
+			term << term.format("   - ADC3 enabled\n");
 		}
 }
