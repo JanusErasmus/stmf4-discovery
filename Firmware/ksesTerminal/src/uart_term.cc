@@ -59,7 +59,7 @@ uartTerm::uartTerm(const char * dev,cyg_uint32 b_size,const char * const prompt_
     cyg_thread_create(TERM_PRIORITY,
                       uartTerm::term_thread_func,
                       (cyg_addrword_t)this,
-                      (char *)"Terminal",
+                      (char *)"uartTerm",
                       mStack,
                       TERM_STACK_SIZE,
                       &mThreadHandle,

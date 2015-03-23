@@ -207,7 +207,6 @@ void TermCMD::help(cTerm & t,int argc,char *argv[])
 	t << YELLOW("TermCMD commands:\n");
 
 	cmd_table_t* t_ptr = NULL;
-	char txt[16];
 
 	int k = 0;
 	do
@@ -218,8 +217,7 @@ void TermCMD::help(cTerm & t,int argc,char *argv[])
 
 		if(t_ptr->f)
 		{
-			sprintf(txt,"%s %s", t_ptr->cmd, t_ptr->argDesc);
-			t <<"  "<< t.format(CYAN("%-10s "),txt) << t.format("- %s\n",t_ptr->desc);
+			t <<"  "<< t.format(CYAN("%-10s "),t_ptr->cmd) << t.format("%-5s ", t_ptr->argDesc) << t.format("- %s\n",t_ptr->desc);
 		}
 		else
 		{

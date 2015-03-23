@@ -59,7 +59,7 @@ usbTerm::usbTerm(cyg_uint32 b_size, const char * const prompt_str) : cTerm(b_siz
 	cyg_thread_create(USB_PRIORITY,
 			usbTerm::rx_thread_func,
 			(cyg_addrword_t)this,
-			(char *)"usbThread",
+			(char *)"usbTerm",
 			mRXStack,
 			USB_STACK_SIZE,
 			&mRXThreadHandle,

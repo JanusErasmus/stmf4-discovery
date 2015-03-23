@@ -6950,9 +6950,8 @@ cdl_option CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE {
 #
 cdl_component CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT {
     # Flavor: bool
-    # No user value, uncomment the following line to provide one.
-    # user_value 0
-    # value_source default
+    user_value 1
+    # value_source user
     # Default value:  0 != CYGPKG_INFRA_DEBUG 
     #     CYGPKG_INFRA_DEBUG == 0
     #   --> 0
@@ -6964,9 +6963,6 @@ cdl_component CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT {
 # output when a thread exits.
 #
 cdl_option CYGDBG_KERNEL_THREADS_STACK_MEASUREMENT_VERBOSE_EXIT {
-    # This option is not active
-    # The parent CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT is disabled
-
     # Flavor: bool
     # No user value, uncomment the following line to provide one.
     # user_value 0
