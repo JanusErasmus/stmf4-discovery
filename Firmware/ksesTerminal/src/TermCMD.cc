@@ -6,7 +6,6 @@
 
 #include "TermCMD.h"
 #include "utils.h"
-#include "F4_RTC.h"
 
 void showThread(cTerm & t);
 void showUsage(cTerm & t);
@@ -23,10 +22,7 @@ void System::handle(cTerm & t,int argc,char *argv[])
 	{
 
 		time_t now = time(NULL);
-		if(F4RTC::hasBeenSet())
-		t << t.format("wallclock: "GREEN("%s"), asctime(localtime(&now)));
-		else
-			t << "wallclock: " << asctime(localtime(&now));
+		t << "wallclock: " << asctime(localtime(&now));
 
 		now = cyg_current_time() / 100;
 		if(now < 60)
@@ -159,19 +155,18 @@ void System::setTime(cTerm & term, int argc,char * argv[])
 			return;
 		term << term.format("s  : %d\n", s);
 
-		bool status = F4RTC::setTime(yy - 1900, mm - 1, dd, h, m, s);
+		time_t timeVal;
+		struct tm info;
+		info.tm_year = yy - 1900;
+		info.tm_mon =  mm - 1;
+		info.tm_mday = dd;
+		info.tm_hour = h;
+		info.tm_min = m;
+		info.tm_sec = s;
+		timeVal = mktime(&info);
 
-//		time_t timeVal;
-//		struct tm info;
-//		info.tm_year = yy - 1900;
-//		info.tm_mon =  mm - 1;
-//		info.tm_mday = dd;
-//		info.tm_hour = h;
-//		info.tm_min = m;
-//		info.tm_sec = s;
-//		timeVal = mktime(&info);
-		if(status)
-				term << GREEN("Updated time\n");
+		if(!cyg_libc_time_settime(timeVal))
+			term << GREEN("Updated time\n");
 		else
 			term << RED("Could not update time\n");
 	}

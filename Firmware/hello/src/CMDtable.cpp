@@ -1,5 +1,5 @@
 #include <cyg/kernel/diag.h>
-#include "TermCMD.h"
+#include <TermCMD.h>
 
 
 TermCMD::cmd_table_t TermCMD::mCmdTable [] =

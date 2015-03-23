@@ -2,7 +2,7 @@
 #define USBTHREAD_H_
 #include <cyg/kernel/kapi.h>
 
-#include "definitions.h"
+#include "ksesTerminal_def.h"
 #include "term.h"
 
 #define USBRXBUFF_SIZE 128

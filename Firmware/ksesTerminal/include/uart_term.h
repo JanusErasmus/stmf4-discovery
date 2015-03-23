@@ -4,7 +4,7 @@
 #include <cyg/hal/hal_arch.h>
 #include <cyg/io/io.h>
 
-#include "definitions.h"
+#include "ksesTerminal_def.h"
 #include "term.h"
 
 class uartTerm : public cTerm

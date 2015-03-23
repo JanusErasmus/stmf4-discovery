@@ -3,14 +3,15 @@
 #include <cyg/hal/var_io.h>
 #include <stdlib.h>
 
+#include <uart_term.h>
+#include <usb_term.h>
+
 #include "definitions.h"
-#include "uart_term.h"
 #include "utils.h"
 #include "init.h"
 #include "led.h"
 #include "F4_RTC.h"
 #include "dog_LCD.h"
-#include "usb_term.h"
 #include "input_port.h"
 
 cInit * cInit::__instance = NULL;
@@ -81,17 +82,17 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	usbTerm::init(128, "discRTC>>");
 
 	char string[16];
-
-	lcd.setLine(2);
+//
+//	lcd.setLine(2);
 	time_t now = time(NULL);
-	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
-	lcd << string;
-
-	lcd.setLine(3);
-	lcd << "Line 3";
-
-	lcd.setLine(4);
-	lcd << "Line 4";
+//	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
+//	lcd << string;
+//
+//	lcd.setLine(3);
+//	lcd << "Line 3";
+//
+//	lcd.setLine(4);
+//	lcd << "Line 4";
 
 	cyg_uint32 portSpec[] = {
 			//CYGHWR_HAL_STM32_GPIO(A, 0, GPIO_IN, 0, OPENDRAIN, NONE, 2MHZ),
