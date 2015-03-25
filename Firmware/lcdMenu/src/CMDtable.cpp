@@ -2,6 +2,8 @@
 #include <TermCMD.h>
 
 #include "stm32cpu.h"
+#include "input_port.h"
+#include "init.h"
 
 TermCMD::cmd_table_t TermCMD::mCmdTable [] =
 {
@@ -14,6 +16,13 @@ TermCMD::cmd_table_t TermCMD::mCmdTable [] =
     {"reset"	, "",			"Reset processor", System::reset},
 	{"STM32"	,0,0,0},
 	{"pstatus"	, "",			"List powered peripherals", stm32cpu::pStatus},
+	{"MENU"	,0,0,0},
+	{"i"	, "",			"List input ports", cInput::showInputs},
+	{"u"	, "",			"UP", cInit::handleNavigation},
+	{"d"	, "",			"DOWN", cInit::handleNavigation},
+	{"e"	, "",			"ENTER", cInit::handleNavigation},
+	{"c"	, "",			"CANCEL", cInit::handleNavigation},
+
 
     {0, 0, 0, 0}
 };

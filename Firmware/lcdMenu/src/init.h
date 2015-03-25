@@ -2,11 +2,16 @@
 #define _INIT_H_
 #include <cyg/kernel/kapi.h>
 
+#include <term.h>
 
 #include "definitions.h"
+#include "menu_main.h"
+
 class cInit
 {
 	static cInit * __instance;
+
+	cMainMenu * mMainMenu;
 
 	cyg_uint8 mStack[INIT_STACK_SIZE];
 	cyg_thread mThread;
@@ -21,6 +26,8 @@ class cInit
 
 public:
 	static void init();
+
+	static void handleNavigation(cTerm & t,int argc,char *argv[]);
 
 
 };

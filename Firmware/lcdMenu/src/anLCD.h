@@ -1,7 +1,9 @@
 #ifndef SRC_ANLCD_H_
 #define SRC_ANLCD_H_
 
-class alphaNumericLCD
+#include "line_display.h"
+
+class alphaNumericLCD : public cLineDisplay
 {
 public:
 
@@ -52,9 +54,14 @@ public:
 
 	void clear();
 	void setLine(cyg_uint8 line);
+	void setCursor(cyg_uint8 row, cyg_uint8 col);
+	void showCursor(cyg_uint8 row = 0xFF, cyg_uint8 col = 0xFF);
+	void hideCursor();
 
 	alphaNumericLCD& operator<<(const char *);
 	char * format(const char *f,...);
+
+	void println(cyg_uint8 line, const char *f,...);
 
 };
 

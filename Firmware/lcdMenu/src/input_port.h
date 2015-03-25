@@ -2,12 +2,15 @@
 #define ALARM_H_
 #include "term.h"
 
-#define PORTA_INPUT(__x)	__x
-#define PORTB_INPUT(__x)	__x + 16
-#define PORTC_INPUT(__x)	__x + 32
-#define PORTD_INPUT(__x)	__x + 48
-#define PORTE_INPUT(__x)	__x + 64
-#define PORTF_INPUT(__x)	__x + 80
+typedef void (*inputTriggerCB)(cyg_bool state);
+
+class inputListener
+{
+public:
+	inputListener(){};
+	virtual ~inputListener(){};
+	virtual void inputChanged(cyg_bool state) = 0;
+};
 
 class cInput
 {
@@ -17,6 +20,7 @@ class cInput
 
 	cyg_uint8 mInputCnt;
 	cyg_uint32* mInputList;
+	inputListener ** mTriggerCallBacks;
 
 	cyg_interrupt* mPDx_Interrupt;
 	cyg_handle_t* mPDx_IntHandle;
@@ -25,12 +29,14 @@ class cInput
 
 	void setupPorts(cyg_uint32* ports, cyg_uint8 count);
 	void setupInterrupts(cyg_uint32* ports, cyg_uint8 count);
+	void enableInterrupt(cyg_uint8 port, cyg_uint8 pin);
 
 public:
 	static void init(cyg_uint32* portSpec, cyg_uint8 portCount);
 	static cInput* get();
 
 	void start();
+	void setListener(cyg_uint8 inputNum, inputListener * trigger);
 
 	cyg_uint8 getPortCount(){ return mInputCnt; };
 	bool getPortState(cyg_uint8);
