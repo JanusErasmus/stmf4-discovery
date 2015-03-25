@@ -111,6 +111,27 @@ void alphaNumericLCD::setLine(cyg_uint8 line)
 
 }
 
+void alphaNumericLCD::setCursor(cyg_uint8 row, cyg_uint8 col)
+{
+	if(row == 0xFF || col == 0xFF)
+			return;
+
+		if(col > 19)
+			col = 19;
+
+		setLine(row);
+}
+
+void alphaNumericLCD::showCursor(cyg_uint8 row, cyg_uint8 col)
+{
+	setCursor(row, col);
+	writeIntruction(0x0D);
+}
+
+void alphaNumericLCD::hideCursor()
+{
+
+}
 
 void alphaNumericLCD::writeIntruction(cyg_uint8 instruction)
 {
@@ -148,7 +169,18 @@ alphaNumericLCD& alphaNumericLCD::operator <<(const char *str)
     for(cyg_uint8 k = 0; k < len; k++)
     	putc(str[k]);
 
-    return(*this);
+    return (*this);
+}
+
+void alphaNumericLCD::println(cyg_uint8 line, const char *f,...)
+{
+	setLine(line);
+	va_list vl;
+	va_start(vl,f);
+	vsprintf(mString,f,vl);
+	va_end(vl);
+
+	*this << mString;
 }
 
 void alphaNumericLCD::putc(const char c)

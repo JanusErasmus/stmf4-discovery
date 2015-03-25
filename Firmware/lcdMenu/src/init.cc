@@ -10,10 +10,13 @@
 #include "utils.h"
 #include "init.h"
 
+#include "debug_display.h"
 #include "anLCD.h"
+
 #include "led.h"
 #include "F4_RTC.h"
 #include "input_port.h"
+#include "keypad.h"
 
 cInit * cInit::__instance = NULL;
 
@@ -48,7 +51,9 @@ cInit::cInit()
     cyg_thread_resume(mThreadHandle);
 
     mPDx_IntHandle = 0;
+    mMainMenu = 0;
 }
+
 
 void cInit::init_thread_func(cyg_addrword_t arg)
 {
@@ -68,6 +73,42 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	};
 	cLED::init(ledPinNumbers, 4);
 
+	CYGHWR_HAL_STM32_CLOCK_ENABLE(CYGHWR_HAL_STM32_CLOCK(AHB1, GPIOC));
+
+	cyg_uint32 columns[] =
+	{
+			KEYPAD_C1,
+			KEYPAD_C2,
+			KEYPAD_C3,
+			KEYPAD_C4,
+	};
+	cyg_uint32 rows[] =
+	{
+			KEYPAD_R1,
+			KEYPAD_R2,
+			KEYPAD_R3,
+			KEYPAD_R4,
+	};
+
+	cKeypad * pad = new cKeypad(columns, 4, rows, 4);
+
+	cyg_uint32 portSpec[] = {
+			CYGHWR_HAL_STM32_PIN_IN(A, 0, NONE),
+			KEYPAD_C1,
+			KEYPAD_C2,
+			KEYPAD_C3,
+			KEYPAD_C4,
+	};
+	cInput::init(portSpec,5);
+
+
+	cInput::get()->setListener(1, pad);
+	cInput::get()->setListener(2, pad);
+	cInput::get()->setListener(3, pad);
+	cInput::get()->setListener(4, pad);
+	cInput::get()->start();
+
+
 
 	alphaNumericLCD::s_DataPins lcdPins(
 			LCD_RS,
@@ -82,10 +123,15 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 			LCD_DB6,
 			LCD_DB7,
 			setDBpins
-			);
+	);
 
-	alphaNumericLCD lcd(lcdPins);
-	lcd << "Hello";
+	alphaNumericLCD * lcd = new alphaNumericLCD(lcdPins);
+	*lcd << "Hello";
+
+	cDebugDisplay * dbgDisplay = new cDebugDisplay();
+
+	__instance->mMainMenu = new cMainMenu(dbgDisplay, 0);
+	__instance->mMainMenu->open();
 
 	// Initialize the Terminals
 	char * prompt = "lcdMenu>>";
@@ -93,33 +139,36 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	uartTerm::init("/dev/tty1", 128, prompt);
 
 
-	char string[16];
-
-	lcd.setLine(2);
-	time_t now = time(NULL);
-	strftime(string, 16, "%a %m-%d-%Y", localtime(&now));
-	lcd << string;
-
-	lcd.setLine(3);
-	lcd << "Line 3";
-
-	lcd.setLine(4);
-	lcd << "Line 4";
-
-	cyg_uint32 portSpec[] = {
-			CYGHWR_HAL_STM32_PIN_IN(A, 0, FLOATING),
-	};
-	cInput::init( portSpec, 1);
-	cInput::get()->start();
-
 	for (;;)
 	{
 		cyg_thread_delay(100);
-		lcd.setLine(1);
-		lcd << "Time ";
-		now = time(NULL);
-		strftime(string, 16, "%H:%M:%S", localtime(&now));
-		lcd << string;
 	}
+}
+
+void cInit::handleNavigation(cTerm & t,int argc,char *argv[])
+{
+	if(!__instance || !__instance->mMainMenu)
+		return;
+
+	if(!strcmp(argv[0], "u"))
+	{
+		__instance->mMainMenu->up();
+	}
+
+	if(!strcmp(argv[0], "d"))
+	{
+		__instance->mMainMenu->down();
+	}
+
+	if(!strcmp(argv[0], "e"))
+	{
+		__instance->mMainMenu->enter();
+	}
+
+	if(!strcmp(argv[0], "c"))
+	{
+		__instance->mMainMenu->cancel();
+	}
+
 }
 
