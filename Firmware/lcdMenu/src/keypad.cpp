@@ -83,101 +83,6 @@ void cKeypad::maskColumnInterrupts()
 	HAL_WRITE_UINT32( CYGHWR_HAL_STM32_EXTI + CYGHWR_HAL_STM32_EXTI_IMR, imrReg);
 }
 
-//void cKeypad::setRowInputs()
-//{
-//	cyg_uint32 port, pin;
-//
-//	for (int k = 0; k < mRowCnt; k++)
-//	{
-//		port = ((mRowList[k])&0xF0000) >> 16;
-//		pin = CYGHWR_HAL_STM32_GPIO_BIT(mRowList[k]);
-//
-//		cyg_uint32 pinSpec = 0;
-//		switch(port)
-//		{
-//		case 0:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_IN(A, pin, PULLUP);
-//			break;
-//		case 1:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_IN(B, pin, PULLUP);
-//			break;
-//		case 2:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_IN(C, pin, PULLUP);
-//			break;
-//		case 3:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_IN(D, pin, PULLUP);
-//			break;
-//		case 4:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_IN(E, pin, PULLUP);
-//			break;
-//
-//		default:
-//			break;
-//		}
-//
-//		if(pinSpec)
-//		{
-//			CYGHWR_HAL_STM32_GPIO_SET(pinSpec);
-//		}
-//	}
-//}
-//
-//void cKeypad::setColumnOutputs()
-//{
-//	cyg_uint32 port, pin;
-//
-//	for (int k = 0; k < mColCnt; k++)
-//	{
-//		port = ((mColList[k])&0xF0000) >> 16;
-//		pin = CYGHWR_HAL_STM32_GPIO_BIT(mColList[k]);
-//
-//		cyg_uint32 pinSpec = 0;
-//		switch(port)
-//		{
-//		case 0:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_OUT(A,  pin, PUSHPULL, NONE, 2MHZ);
-//			break;
-//		case 1:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_OUT(B,  pin, PUSHPULL, NONE, 2MHZ);
-//			break;
-//		case 2:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_OUT(C,  pin, PUSHPULL, NONE, 2MHZ);
-//			break;
-//		case 3:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_OUT(D,  pin, PUSHPULL, NONE, 2MHZ);
-//			break;
-//		case 4:
-//			pinSpec = CYGHWR_HAL_STM32_PIN_OUT(E,  pin, PUSHPULL, NONE, 2MHZ);
-//			break;
-//
-//		default:
-//			break;
-//		}
-//
-//		if(pinSpec)
-//		{
-//			CYGHWR_HAL_STM32_GPIO_SET(pinSpec);
-//			CYGHWR_HAL_STM32_GPIO_OUT(pinSpec, 0);
-//		}
-//	}
-//}
-//
-//int cKeypad::readRow()
-//{
-//	for (int k = 0; k < mRowCnt; k++)
-//	{
-//		cyg_uint32 pin = CYGHWR_HAL_STM32_GPIO_BIT(mRowList[k]);
-//		cyg_uint32 port = CYGHWR_HAL_STM32_GPIO_PORT(mRowList[k]);
-//		cyg_uint32 reg32;
-//		HAL_READ_UINT32( port + CYGHWR_HAL_STM32_GPIO_IDR, reg32 );
-//
-//		if(!(reg32 & (1 << pin)))
-//			return k;
-//	}
-//
-//	return -1;
-//}
-
 int cKeypad::scanRow(int col)
 {
 	int activeRow = -1;
@@ -245,16 +150,8 @@ void cKeypad::inputChanged(cyg_bool state)
 	int column = readColumn();
 
 	maskColumnInterrupts();
-	//setRowInputs();
-	//setColumnOutputs();
 
-	//HAL_DELAY_US(20000);
-	//cyg_thread_delay(1);
-
-	int rowPins = scanRow(column);//readRow();
-
-	//restore pin states
-	//setupPorts();
+	int rowPins = scanRow(column);
 
 	unMaskColumnInterrupts();
 

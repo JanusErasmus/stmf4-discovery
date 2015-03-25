@@ -17,9 +17,6 @@ class cKeypad : public inputListener
 	int readColumn(int idx = -1);
 	void maskColumnInterrupts();
 	int scanRow(int row);
-	//void setRowInputs();
-	//void setColumnOutputs();
-	//int readRow();
 	void unMaskColumnInterrupts();
 	void handleKeyPress(int col, int row);
 
