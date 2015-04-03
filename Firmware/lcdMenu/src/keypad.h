@@ -14,9 +14,17 @@ class cKeypad : public inputListener
 	void inputChanged(cyg_bool state);
 
 	void setupPorts();
+<<<<<<< HEAD
 	int readColumn(int idx = -1);
 	void maskColumnInterrupts();
 	int scanRow(int row);
+=======
+	int readColumn();
+	void maskColumnInterrupts();
+	void setRowInputs();
+	void setColumnOutputs();
+	int readRow();
+>>>>>>> 9a7bf6d4a318dfff7ecc05736f15373019ec73ae
 	void unMaskColumnInterrupts();
 	void handleKeyPress(int col, int row);
 
