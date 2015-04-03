@@ -3,9 +3,12 @@
 #include <cyg/kernel/kapi.h>
 
 #include "line_display.h"
+#include "keypad.h"
 
-class cLCDmenu
+class cLCDmenu : public menuInput
 {
+
+	void buttonPress(char button);
 
 protected:
 	cLCDmenu* mSubMenu;
@@ -13,10 +16,7 @@ protected:
 	cLineDisplay * mDisplay;
 	cLCDmenu* mParent;
 
-	virtual void handleUp(){};
-	virtual void handleDown(){};
-	virtual void handleEnter(){};
-	virtual void handleCancel(){};
+	virtual void handleButtonPress(char button){};
 
 public:
 	cLCDmenu(cLineDisplay * lcd, const char* heading, cLCDmenu * parent = 0);
@@ -24,11 +24,6 @@ public:
 	virtual void open() = 0;
 
 	const char* getHeading(){ return mHeading; };
-
-	void up();
-	void down();
-	void enter();
-	void cancel();
 
 	virtual void returnParentMenu();
 

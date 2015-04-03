@@ -13,6 +13,8 @@ public:
 	virtual void showCursor(cyg_uint8 row = 0xFF, cyg_uint8 col = 0xFF) = 0;
 	virtual void hideCursor() = 0;
 	virtual void println(cyg_uint8 line, const char *f,...) = 0;
+	virtual void print(const char *f,...) = 0;
+	virtual void print(const char c) = 0;
 };
 
 

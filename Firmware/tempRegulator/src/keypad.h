@@ -4,12 +4,22 @@
 
 #include "input_port.h"
 
+class menuInput
+{
+public:
+	menuInput(){};
+	virtual ~menuInput(){};
+	virtual void buttonPress(char button) = 0;
+};
+
 class cKeypad : public inputListener
 {
 	cyg_uint8 mColCnt;
 	cyg_uint32* mColList;
 	cyg_uint8 mRowCnt;
 	cyg_uint32* mRowList;
+
+	menuInput * mMenuInput;
 
 	void inputChanged(cyg_bool state);
 
@@ -24,6 +34,7 @@ public:
 	cKeypad(cyg_uint32* colSpec, cyg_uint8 colCount, cyg_uint32* rowSpec, cyg_uint8 rowCount);
 	virtual ~cKeypad();
 
+	void setMenu(menuInput * menu){ mMenuInput = menu; };
 
 };
 

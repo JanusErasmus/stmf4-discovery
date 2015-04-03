@@ -1,6 +1,8 @@
+#include <cyg/kernel/diag.h>
+
 #include "menu_lcd.h"
 
-cLCDmenu::cLCDmenu(cLineDisplay * lcd, const char* heading, cLCDmenu * parent) :
+cLCDmenu::cLCDmenu(cLineDisplay * lcd,  const char* heading, cLCDmenu * parent) :
 	mSubMenu(0),
 	mHeading(heading),
 	mDisplay(lcd),
@@ -8,49 +10,17 @@ cLCDmenu::cLCDmenu(cLineDisplay * lcd, const char* heading, cLCDmenu * parent) :
 {
 }
 
-void cLCDmenu::up()
+void cLCDmenu::buttonPress(char button)
 {
 	if(mSubMenu)
 	{
-		mSubMenu->up();
+		mSubMenu->handleButtonPress(button);
 		return;
 	}
 
-	handleUp();
+	handleButtonPress(button);
 }
 
-void cLCDmenu::down()
-{
-	if(mSubMenu)
-	{
-		mSubMenu->down();
-		return;
-	}
-
-	handleDown();
-}
-
-void cLCDmenu::enter()
-{
-	if(mSubMenu)
-	{
-		mSubMenu->enter();
-		return;
-	}
-
-	handleEnter();
-}
-
-void cLCDmenu::cancel()
-{
-	if(mSubMenu)
-	{
-		mSubMenu->cancel();
-		return;
-	}
-
-	handleCancel();
-}
 
 void cLCDmenu::returnParentMenu()
 {
@@ -65,5 +35,7 @@ cLCDmenu::~cLCDmenu()
 {
 	if(mSubMenu)
 		delete mSubMenu;
+
+	diag_printf("delete super\n");
 }
 

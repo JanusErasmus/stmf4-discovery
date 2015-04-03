@@ -8,10 +8,7 @@ class cMainMenu : public cLCDmenu
 	cyg_uint8 mCursurPos;
 
 
-	void handleEnter();
-	void handleCancel();
-	void handleUp();
-	void handleDown();
+	void handleButtonPress(char button);
 
 public:
 	cMainMenu(cLineDisplay * lcd, cLCDmenu * parent);

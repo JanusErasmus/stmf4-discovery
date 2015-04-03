@@ -20,10 +20,6 @@ TermCMD::cmd_table_t TermCMD::mCmdTable [] =
 	{"sync"	, "",			"sync F4RTC time", F4RTC::syncEcosTime},
 	{"MENU"	,0,0,0},
 	{"i"	, "",			"List input ports", cInput::showInputs},
-	{"u"	, "",			"UP", cInit::handleNavigation},
-	{"d"	, "",			"DOWN", cInit::handleNavigation},
-	{"e"	, "",			"ENTER", cInit::handleNavigation},
-	{"c"	, "",			"CANCEL", cInit::handleNavigation},
 	{"on"	, "",			"Element on", cInit::handleNavigation},
 	{"off"	, "",			"Element off", cInit::handleNavigation},
 

@@ -4,7 +4,8 @@
 #include "menu_main.h"
 #include "menu_set_time.h"
 
-cMainMenu::cMainMenu(cLineDisplay * lcd, cLCDmenu * parent) : cLCDmenu(lcd, "Main Menu", parent)
+cMainMenu::cMainMenu(cLineDisplay * lcd, cLCDmenu * parent) :
+	cLCDmenu(lcd, "Main Menu", parent)
 {
 	mMenuCnt = 3;
 	mCursurPos = 2;
@@ -16,6 +17,10 @@ void cMainMenu::open()
 	mDisplay->println(1,mHeading);
 
 	mCursurPos = 3;
+
+
+	if(mSubMenu)
+		delete mSubMenu;
 	mSubMenu = 0;
 
 	//list all the sub menus
@@ -31,51 +36,21 @@ void cMainMenu::open()
 
 }
 
-void cMainMenu::handleEnter()
+void cMainMenu::handleButtonPress(char button)
 {
-	if(mCursurPos > (mMenuCnt + 1))
-		return;
-
-	mDisplay->hideCursor();
-
-	switch(mCursurPos)
+	diag_printf("Main press %c\n", button);
+	switch(button)
 	{
-	case 3:
+	case '1':
+		break;
+	case '2':
 		mSubMenu = new cSetTimeMenu(mDisplay, this);
+		mSubMenu->open();
 		break;
 
 	default:
 		break;
 	}
-
-	if(mSubMenu)
-		mSubMenu->open();
-}
-
-void cMainMenu::handleCancel()
-{
-	if(mParent)
-		mParent->returnParentMenu();
-}
-
-void cMainMenu::handleUp()
-{
-	if(--mCursurPos == 1)
-		mCursurPos = mMenuCnt + 1;
-
-	mDisplay->setCursor(mCursurPos,0);
-
-	diag_printf("cursor %d\n", mCursurPos);
-}
-
-void cMainMenu::handleDown()
-{
-	if(++mCursurPos > 4)
-		mCursurPos = 2;
-
-	mDisplay->setCursor(mCursurPos,0);
-
-	diag_printf("cursor %d\n", mCursurPos);
 }
 
 cMainMenu::~cMainMenu()

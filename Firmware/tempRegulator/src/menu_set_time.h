@@ -12,18 +12,12 @@ class cSetTimeMenu : public cLCDmenu
 	void setHours(cyg_uint8 hours);
 	void setMinutes(cyg_uint8 min);
 
+	void handleButtonPress(char button);
 
 public:
 	cSetTimeMenu(cLineDisplay * lcd, cLCDmenu* parent = 0);
 
 	void open();
-
-	void handleEnter();
-	void handleCancel();
-	void handleUp();
-	void handleDown();
-
-	void returnParentMenu();
 
 	virtual ~cSetTimeMenu();
 };

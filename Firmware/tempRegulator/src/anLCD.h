@@ -62,6 +62,8 @@ public:
 	char * format(const char *f,...);
 
 	void println(cyg_uint8 line, const char *f,...);
+	void print(const char *f,...);
+	void print(const char c);
 
 };
 

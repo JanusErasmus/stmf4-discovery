@@ -13,6 +13,8 @@ char keys[][4] =
 
 cKeypad::cKeypad(cyg_uint32* colSpec, cyg_uint8 colCount, cyg_uint32* rowSpec, cyg_uint8 rowCount)
 {
+	mMenuInput = 0;
+
 	mColCnt = colCount;
 	mColList = new cyg_uint32[mColCnt];
 	memcpy(mColList, colSpec, sizeof(cyg_uint32) * mColCnt);
@@ -139,7 +141,10 @@ void cKeypad::handleKeyPress(int col, int row)
 	if((col < 0) || (row < 0))
 		return;
 
-	diag_printf("Key: %c\n", keys[row][col]);
+	if(mMenuInput)
+		mMenuInput->buttonPress(keys[row][col]);
+	else
+		diag_printf("Key: %c\n", keys[row][col]);
 }
 
 void cKeypad::inputChanged(cyg_bool state)

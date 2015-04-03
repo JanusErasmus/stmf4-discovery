@@ -18,103 +18,11 @@
 #include "F4_RTC.h"
 #include "input_port.h"
 #include "keypad.h"
+#include "temp_probe.h"
 
 cInit * cInit::__instance = NULL;
 
-cyg_uint32 sample()
-{
-	cyg_uint32 reg32;
 
-	HAL_WRITE_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_SR, 0x00);
-
-	HAL_READ_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_CR2, reg32);
-			reg32 	|=
-					CYGHWR_HAL_STM32_ADC_CR2_SWSTART |		//start conversion
-					0;
-	HAL_WRITE_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_CR2, reg32);
-
-	do
-		{
-			HAL_READ_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_SR, reg32);
-		}
-		while(!(reg32 & CYGHWR_HAL_STM32_ADC_SR_EOC));
-
-	HAL_READ_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_DR, reg32);
-
-	//diag_printf("ADC 0x%08X\n", reg32);
-	return reg32;
-}
-
-cyg_uint32 adcBuff[32];
-cyg_uint8 adcIdx = 0;
-
-void setupTemperature()
-{
-	CYGHWR_HAL_STM32_GPIO_SET(TEMP_IN1);
-	CYGHWR_HAL_STM32_CLOCK_ENABLE(CYGHWR_HAL_STM32_CLOCK(APB2, ADC1));
-
-	cyg_thread_delay(100);
-	cyg_uint32 reg32;
-
-	HAL_READ_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_SR, reg32);
-	diag_printf("SR: 0x%08X\n", reg32);
-
-
-//	HAL_READ_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_CR2, reg32);
-	reg32 =
-			CYGHWR_HAL_STM32_ADC_CR2_ADON |		//switch on
-			0;
-	HAL_WRITE_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_CR2, reg32);
-
-	reg32 =
-				CYGHWR_HAL_STM32_ADC_CR1_DISCEN |		//switch on
-				0;
-		HAL_WRITE_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_CR1, reg32);
-
-	HAL_READ_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_CR1, reg32);
-	diag_printf("CR1: 0x%08X\n", reg32);
-
-	HAL_READ_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_CR2, reg32);
-	diag_printf("CR2: 0x%08X\n", reg32);
-
-
-		reg32 = 1 |	//select channel 1 as 1st sequence
-				0;
-		HAL_WRITE_UINT32( CYGHWR_HAL_STM32_ADC1 + CYGHWR_HAL_STM32_ADC_SQR3, reg32);
-
-		for(cyg_uint8 k = 0; k < 32; k++)
-			adcBuff[k] = 0x989;
-
-}
-
-
-
-double getTemp(cyg_uint32 adc)
-{
-	static bool tempValid = false;
-	adcBuff[adcIdx] = adc;
-	//diag_printf("%d:0x%08X\n", adcIdx, adcBuff[adcIdx]);
-
-	if(++adcIdx >= 32)
-	{
-		tempValid = true;
-		adcIdx = 0;
-	}
-
-
-	cyg_uint32 adcSum = 0;
-	for(cyg_uint8 k = 0; k < 32; k++)
-	{
-		adcSum += adcBuff[k];
-	}
-
-	float adcAvg = (float)(adcSum >> 5);
-
-	if(tempValid)
-		return (adcAvg * 0.122073125) - 273.0;
-
-	return -1;
-}
 
 void setDBpins(cyg_uint8 data)
 {
@@ -204,55 +112,48 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 	cInput::get()->setListener(4, pad);
 	cInput::get()->start();
 
+	alphaNumericLCD::s_DataPins lcdPins(
+			LCD_RS,
+			LCD_RW,
+			LCD_E,
+			LCD_DB0,
+			LCD_DB1,
+			LCD_DB2,
+			LCD_DB3,
+			LCD_DB4,
+			LCD_DB5,
+			LCD_DB6,
+			LCD_DB7,
+			setDBpins
+	);
+	alphaNumericLCD * lcd = new alphaNumericLCD(lcdPins);
 
+	__instance->mMainMenu = new cMainMenu(lcd, 0);
+	pad->setMenu(__instance->mMainMenu);
+	__instance->mMainMenu->open();
 
-//	alphaNumericLCD::s_DataPins lcdPins(
-//			LCD_RS,
-//			LCD_RW,
-//			LCD_E,
-//			LCD_DB0,
-//			LCD_DB1,
-//			LCD_DB2,
-//			LCD_DB3,
-//			LCD_DB4,
-//			LCD_DB5,
-//			LCD_DB6,
-//			LCD_DB7,
-//			setDBpins
-//	);
-//	alphaNumericLCD * lcd = new alphaNumericLCD(lcdPins);
-
-	setupTemperature();
-
-//	__instance->mMainMenu = new cMainMenu(lcd, 0);
-//	__instance->mMainMenu->open();
+	tempProbe * probe = new tempProbe(TEMP_IN1);
 
 	// Initialize the Terminals
 	char * prompt = "lcdMenu>>";
 	//usbTerm::init(128, prompt);
 	uartTerm::init("/dev/tty1", 128, prompt);
 
-	cyg_uint8 dispCnt = 0;
-
 	for (;;)
 	{
-		double temp = getTemp(sample());
-		if(temp > 0)
-		{
-			if(dispCnt++ > 10)
-			{
-				dispCnt = 0;
-			printf("T: %.1f\n", temp);
-			}
+		probe->sample();
+//		double temp = probe->getTemp();
+//		if(temp > 0)
+//		{
+//			printf("T: %.1f\n", temp);
+//			if(temp < 80.0)
+//				CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT, 1);
+//
+//			if( temp > 85.0)
+//				CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT, 0);
+//		}
 
-			if(temp < 80.0)
-				CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT, 1);
-
-			if( temp > 85.0)
-				CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT, 0);
-		}
-
-		cyg_thread_delay(10);
+		cyg_thread_delay(100);
 	}
 }
 
@@ -260,26 +161,6 @@ void cInit::handleNavigation(cTerm & t,int argc,char *argv[])
 {
 	if(!__instance || !__instance->mMainMenu)
 		return;
-
-	if(!strcmp(argv[0], "u"))
-	{
-		__instance->mMainMenu->up();
-	}
-
-	if(!strcmp(argv[0], "d"))
-	{
-		__instance->mMainMenu->down();
-	}
-
-	if(!strcmp(argv[0], "e"))
-	{
-		__instance->mMainMenu->enter();
-	}
-
-	if(!strcmp(argv[0], "c"))
-	{
-		__instance->mMainMenu->cancel();
-	}
 
 	if(!strcmp(argv[0], "on"))
 		{

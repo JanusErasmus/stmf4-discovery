@@ -188,6 +188,9 @@ bool F4RTC::setTime(cyg_uint8 yy, cyg_uint8 mm, cyg_uint8 dd, cyg_uint8 h, cyg_u
 	yy -= 2000;
 	mm -= 1;
 
+	//diag_printf("%02d:%02d:%02d\n", h, m, s);
+	//diag_printf("%04d-%02d-%02d\n", yy, mm, dd);
+
 	cyg_uint32 dateReg =   (yy/10 << CYGHWR_HAL_STM32_RTC_DR_YT_SHIFT)
 									| (yy%10 << CYGHWR_HAL_STM32_RTC_DR_YU_SHIFT)
 									| (mm/10 << CYGHWR_HAL_STM32_RTC_DR_MT_SHIFT)
