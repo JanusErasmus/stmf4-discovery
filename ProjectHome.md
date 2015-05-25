@@ -1,0 +1,1 @@
+A eCos compiled library for the development kit using USART1 as a terminal
