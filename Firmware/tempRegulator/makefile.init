@@ -10,14 +10,13 @@ version:
 
 copy-binary:	
 	-arm-eabi-objcopy -O binary ./${BINARY_NAME}.hex ../${BINARY_NAME}.bin
-	@echo ' '
-	
+#	@echo ' '
+#	
 	@arm-eabi-size ./${BINARY_NAME}.hex
-	@echo ' '
-	
-
-	@echo 'Build successfull...'
-	@echo 'Version String : $(VERSION)'
-	@echo 'Build Timestamp: '`date` 	
-	@echo ' '
+#	@echo ' '
+##
+#	@echo 'Build successfull...'
+#	@echo 'Version String : $(VERSION)'
+#	@echo 'Build Timestamp: '`date` 	
+#	@echo ' '
 

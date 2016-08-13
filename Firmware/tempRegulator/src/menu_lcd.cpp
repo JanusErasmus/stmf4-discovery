@@ -26,8 +26,8 @@ void cLCDmenu::returnParentMenu()
 {
 	if(mSubMenu)
 		delete mSubMenu;
-
 	mSubMenu = 0;
+
 	open();
 }
 
@@ -35,7 +35,5 @@ cLCDmenu::~cLCDmenu()
 {
 	if(mSubMenu)
 		delete mSubMenu;
-
-	diag_printf("delete super\n");
 }
 

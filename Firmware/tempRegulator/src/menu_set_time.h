@@ -9,8 +9,7 @@ class cSetTimeMenu : public cLCDmenu
 	cyg_uint8 mHours;
 	cyg_uint8 mMinutes;
 
-	void setHours(cyg_uint8 hours);
-	void setMinutes(cyg_uint8 min);
+	void setTime();
 
 	void handleButtonPress(char button);
 

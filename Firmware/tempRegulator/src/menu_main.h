@@ -14,6 +14,7 @@ public:
 	cMainMenu(cLineDisplay * lcd, cLCDmenu * parent);
 
 	void open();
+	void updateReading(float temp, float humid, cyg_bool heater, cyg_bool water);
 
 
 	virtual ~cMainMenu();

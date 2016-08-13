@@ -199,7 +199,7 @@ void stm32cpu::pStatus(cTerm & term, int argc,char * argv[])
 		{
 			term << term.format("   - UART5 enabled\n");
 		}
-		if(reg32 & (CYGHWR_HAL_STM32_RCC_APB1ENR_I2C1))
+		if(reg32 & (1 << CYGHWR_HAL_STM32_RCC_APB1ENR_I2C1))
 		{
 			term << term.format("   - I2C1 enabled\n");
 		}

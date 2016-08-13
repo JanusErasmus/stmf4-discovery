@@ -83,6 +83,8 @@ void alphaNumericLCD::initLCM()
 
 void alphaNumericLCD::clear()
 {
+	initLCM();
+
 	writeIntruction(0x01);
 	cyg_thread_delay(1);
 }

@@ -24,8 +24,7 @@ hal_startup_stack = 0x20000000 + 1024*128;
 SECTIONS
 {
     SECTIONS_BEGIN
-    USER_SECTION (ccm, ccm, 0x10000000, LMA_EQ_VMA)
-    SECTION_rom_vectors (flash, 0x08000000, LMA_EQ_VMA)
+    SECTION_rom_vectors (flash, CYGNUM_HAL_CORTEXM_STM32_IMAGE_ADDRESS, LMA_EQ_VMA)
     SECTION_RELOCS (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_text (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_fini (flash, ALIGN (0x8), LMA_EQ_VMA)
@@ -35,7 +34,8 @@ SECTIONS
     SECTION_gcc_except_table (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_eh_frame (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_got (flash, ALIGN (0x8), LMA_EQ_VMA)
-    SECTION_sram (ram, hal_virtual_vector_table_end, FOLLOWING (.got))
+    USER_SECTION (ccm, ccm, 0x10000000, FOLLOWING (.got))
+    SECTION_sram (ram, hal_virtual_vector_table_end, FOLLOWING (.ccm))
     SECTION_data (ram, ALIGN( 0x8), FOLLOWING (.sram))
     SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);

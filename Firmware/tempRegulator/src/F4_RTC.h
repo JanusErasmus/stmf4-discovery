@@ -25,6 +25,9 @@ public:
 	static bool setTime(cyg_uint8 yy, cyg_uint8 mm, cyg_uint8 dd, cyg_uint8 h, cyg_uint8 m, cyg_uint8 s);
 	static bool setTime(time_t* t);
 
+	static cyg_uint32 getBKP(cyg_uint8 reg);
+	static void setBKP(cyg_uint8 reg, cyg_uint32 data);
+
 	static void syncEcosTime(cTerm & term, int argc,char * argv[]);
 
 };

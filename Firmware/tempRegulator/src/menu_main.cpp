@@ -1,8 +1,13 @@
 #include <cyg/kernel/diag.h>
 #include <time.h>
+#include <stdio.h>
 
+#include "definitions.h"
+#include "init.h"
 #include "menu_main.h"
 #include "menu_set_time.h"
+#include "menu_set_output.h"
+#include "menu_set_temp.h"
 
 cMainMenu::cMainMenu(cLineDisplay * lcd, cLCDmenu * parent) :
 	cLCDmenu(lcd, "Main Menu", parent)
@@ -14,26 +19,35 @@ cMainMenu::cMainMenu(cLineDisplay * lcd, cLCDmenu * parent) :
 void cMainMenu::open()
 {
 	mDisplay->clear();
-	mDisplay->println(1,mHeading);
 
 	mCursurPos = 3;
 
 
-	if(mSubMenu)
-		delete mSubMenu;
-	mSubMenu = 0;
+	mDisplay->println(2,"       STANDBY");
 
-	//list all the sub menus
+}
 
-	char string[16];
-	time_t now = time(NULL);
+void cMainMenu::updateReading(float temp, float humid, cyg_bool heater, cyg_bool water)
+{
+	if(!mSubMenu)
+	{
+		char string[32];
 
-	strftime(string, 16, "%a %d-%m-%Y", localtime(&now));
-	mDisplay->println(2, string);
+		mDisplay->clear();
 
-	mDisplay->println(3, "1: SETUP PUMP");
-	mDisplay->println(4, "2: SET TIME");
+		time_t now = time(NULL);
+		strftime(string, 16, "     %H:%M", localtime(&now));
+		mDisplay->println(1, string);
 
+		sprintf(string, "TEMPERATURE: %0.1f", temp);
+		mDisplay->println(2,string);
+
+		sprintf(string, "HUMIDITY   : %0.1f", humid);
+		mDisplay->println(3,string);
+
+		sprintf(string, "H: %s    W: %s", heater?"ON ":"OFF", water?"ON ":"OFF");
+		mDisplay->println(4,string);
+	}
 }
 
 void cMainMenu::handleButtonPress(char button)
@@ -41,11 +55,25 @@ void cMainMenu::handleButtonPress(char button)
 	diag_printf("Main press %c\n", button);
 	switch(button)
 	{
-	case '1':
+	case 'A':
+		mSubMenu = new cMenuSetOutput(mDisplay, this);
+		mSubMenu->open();
 		break;
-	case '2':
+	case 'B':
 		mSubMenu = new cSetTimeMenu(mDisplay, this);
 		mSubMenu->open();
+		break;
+	case 'C':
+		mSubMenu = new cMenuSetTemp(mDisplay, this);
+		mSubMenu->open();
+		break;
+
+	case 'D':
+
+		mDisplay->clear();
+		mDisplay->println(1,"      ROTATE...");
+		mDisplay->println(2,"       STANDBY");
+		cInit::forceRotate();
 		break;
 
 	default:

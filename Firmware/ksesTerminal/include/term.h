@@ -1,5 +1,6 @@
 #ifndef _TERM_H_
 #define _TERM_H_
+#include <cyg/kernel/kapi.h>
 
 class cTerm
 {

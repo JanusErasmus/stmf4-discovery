@@ -12,7 +12,6 @@
 #include <pkgconf/system.h>
 /*****  proc output end  *****/
 #define CYGPKG_INFRA_STARTUP 1
-#define CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS 1
 #define CYGPKG_INFRA_OPTIONS 1
 #define CYGNUM_TESTS_RUN_COUNT 1
 #define CYGNUM_TESTS_RUN_COUNT_1

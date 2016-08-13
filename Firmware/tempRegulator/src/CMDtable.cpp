@@ -5,6 +5,9 @@
 #include "input_port.h"
 #include "init.h"
 #include "F4_RTC.h"
+#include "pwm_port.h"
+#include "output_port.h"
+#include "motor.h"
 
 TermCMD::cmd_table_t TermCMD::mCmdTable [] =
 {
@@ -16,12 +19,12 @@ TermCMD::cmd_table_t TermCMD::mCmdTable [] =
     {"settime"	, "<yyyy mm dd HH MM SS>",			"Set system time", System::setTime},
 	{"STM32"	,0,0,0},
 	{"reset"	, "",			"Reset processor", System::reset},
-	{"pstatus"	, "",			"List powered peripherals", stm32cpu::pStatus},
+	{"pstat"	, "",			"List powered peripherals", stm32cpu::pStatus},
 	{"sync"	, "",			"sync F4RTC time", F4RTC::syncEcosTime},
-	{"MENU"	,0,0,0},
-	{"i"	, "",			"List input ports", cInput::showInputs},
-	{"on"	, "",			"Element on", cInit::handleNavigation},
-	{"off"	, "",			"Element off", cInit::handleNavigation},
+	{"OUTPUT"	,0,0,0},
+	{"o"	, "",			"List output ports", cOutputDriver::setOutput},
+	{"r"	, "",			"Rotate motor", cMotor::debugMotor},
+
 
 
     {0, 0, 0, 0}

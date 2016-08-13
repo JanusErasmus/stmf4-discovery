@@ -53,6 +53,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_CORTEXM_STM32_STM32F4DISCOVERY current ;
     package -hardware CYGPKG_DEVS_FLASH_STM32 current ;
     package -hardware CYGPKG_IO_SERIAL_CORTEXM_STM32 current ;
+    package -hardware CYGPKG_IO_I2C current ;
+    package -hardware CYGPKG_DEVS_I2C_CORTEXM_STM32 current ;
 };
 
 # ---- conflicts -------------------------------------------------------
@@ -528,6 +530,8 @@ cdl_package CYGPKG_HAL {
     #   --> 1
 
     # The following properties are affected by this value
+    # package CYGPKG_IO_I2C
+    #     Requires: CYGPKG_INFRA CYGPKG_HAL
 };
 
 # >
@@ -2393,6 +2397,8 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32 {
     # The following properties are affected by this value
     # package CYGPKG_IO_SERIAL_CORTEXM_STM32
     #     ActiveIf: CYGPKG_HAL_CORTEXM_STM32
+    # package CYGPKG_DEVS_I2C_CORTEXM_STM32
+    #     ActiveIf: CYGPKG_HAL_CORTEXM_STM32
 };
 
 # >
@@ -2751,6 +2757,10 @@ cdl_option CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY {
     # option CYGHWR_HAL_STM32_SPI1_REMAP
     #     ActiveIf: CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
     # option CYGHWR_HAL_STM32_SPI3_REMAP
+    #     ActiveIf: CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
+    # option CYGHWR_HAL_STM32_SPI4_REMAP
+    #     ActiveIf: CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
+    # option CYGHWR_HAL_STM32_SPI5_REMAP
     #     ActiveIf: CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
 };
 
@@ -3181,6 +3191,20 @@ cdl_option CYGHWR_HAL_STM32_SPI1_REMAP {
     # Default value: 0
 };
 
+# Remap SPI bus 2 pins
+# Remap SPI bus 2 to alternate set of pins.
+# This will usually be set by the platform
+# HAL to reflect the configuration of the hardware.
+#
+cdl_option CYGHWR_HAL_STM32_SPI2_REMAP {
+    # Flavor: data
+    # No user value, uncomment the following line to provide one.
+    # user_value NONE
+    # value_source default
+    # Default value: NONE
+    # Legal values:  "NONE" "PARTIAL" "FULL" 
+};
+
 # Remap SPI bus 3 pins
 # Remap SPI bus 3 to alternate set of pins.
 # This will usually be set by the platform
@@ -3189,6 +3213,44 @@ cdl_option CYGHWR_HAL_STM32_SPI1_REMAP {
 # devices.
 #
 cdl_option CYGHWR_HAL_STM32_SPI3_REMAP {
+    # ActiveIf constraint: CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
+    #     CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY == 1
+    #   --> 1
+
+    # Flavor: bool
+    # No user value, uncomment the following line to provide one.
+    # user_value 0
+    # value_source default
+    # Default value: 0
+};
+
+# Remap SPI bus 4 pins
+# Remap SPI bus 4 to alternate set of pins.
+# This will usually be set by the platform
+# HAL to reflect the configuration of the hardware.
+# This option is only available on connectivity line
+# devices.
+#
+cdl_option CYGHWR_HAL_STM32_SPI4_REMAP {
+    # ActiveIf constraint: CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
+    #     CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY == 1
+    #   --> 1
+
+    # Flavor: bool
+    # No user value, uncomment the following line to provide one.
+    # user_value 0
+    # value_source default
+    # Default value: 0
+};
+
+# Remap SPI bus 5 pins
+# Remap SPI bus 5 to alternate set of pins.
+# This will usually be set by the platform
+# HAL to reflect the configuration of the hardware.
+# This option is only available on connectivity line
+# devices.
+#
+cdl_option CYGHWR_HAL_STM32_SPI5_REMAP {
     # ActiveIf constraint: CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY
     #     CYGHWR_HAL_CORTEXM_STM32_CONNECTIVITY == 1
     #   --> 1
@@ -3339,6 +3401,8 @@ cdl_component CYG_HAL_STARTUP {
     #     Calculated:  (CYG_HAL_STARTUP == "ROM"    ) ? "cortexm_stm32f4discovery_rom"      :
     #                             (CYG_HAL_STARTUP == "JTAG"   ) ? "cortexm_stm32f4discovery_jtag"     :
     #                                                              "undefined" 
+    # option CYGNUM_HAL_CORTEXM_STM32_IMAGE_ADDRESS
+    #     ActiveIf:  CYG_HAL_STARTUP == "ROM" 
     # option CYGSEM_HAL_INSTALL_MMU_TABLES
     #     DefaultValue:  CYG_HAL_STARTUP != "RAM" 
     # component CYGDBG_HAL_DIAG_TO_DEBUG_CHAN
@@ -3385,6 +3449,25 @@ cdl_option CYGHWR_MEMORY_LAYOUT_H {
 };
 
 # <
+# Address in flash the image should live
+# This optionspecifies where in flash the image
+# lives. By default it is at the bottom of the flash,
+# but for example redboot may be at the bottom and an
+# application lives higher up, which is acheived by 
+# setting the address here.
+#
+cdl_option CYGNUM_HAL_CORTEXM_STM32_IMAGE_ADDRESS {
+    # ActiveIf constraint:  CYG_HAL_STARTUP == "ROM" 
+    #     CYG_HAL_STARTUP == ROM
+    #   --> 1
+
+    # Flavor: data
+    # No user value, uncomment the following line to provide one.
+    # user_value 0x08000000
+    # value_source default
+    # Default value: 0x08000000
+};
+
 # Input clock frequency
 # Main clock input.
 #
@@ -5138,6 +5221,8 @@ cdl_package CYGPKG_INFRA {
     # The following properties are affected by this value
     # package CYGPKG_HAL
     #     Requires: CYGPKG_INFRA
+    # package CYGPKG_IO_I2C
+    #     Requires: CYGPKG_INFRA CYGPKG_HAL
 };
 
 # >
@@ -5705,9 +5790,8 @@ cdl_option CYGIMP_INFRA_PREFER_SMALL_TO_FAST_MEMSET {
 #
 cdl_option CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS {
     # Flavor: bool
-    # No user value, uncomment the following line to provide one.
-    # user_value 1
-    # value_source default
+    user_value 0
+    # value_source user
     # Default value: 1
 };
 
@@ -14500,6 +14584,131 @@ cdl_option CYGPKG_ERROR_CFLAGS_REMOVE {
     # user_value ""
     # value_source default
     # Default value: ""
+};
+
+# <
+# <
+# I2C support
+# doc: ref/io-i2c.html
+# The generic I2C package provides an API for accessing devices
+# attached to an I2C bus. It specifies how I2C bus drivers should
+# be written and how I2C devices should be defined. There is also
+# support for bit-banged I2C buses.
+#
+cdl_package CYGPKG_IO_I2C {
+    # Packages cannot be added or removed, nor can their version be changed,
+    # simply by editing their value. Instead the appropriate configuration
+    # should be used to perform these actions.
+
+    # This value cannot be modified here.
+    # Flavor: booldata
+    # Current value: 1 current
+    # Requires: CYGPKG_INFRA CYGPKG_HAL
+    #     CYGPKG_INFRA == current
+    #     CYGPKG_HAL == current
+    #   --> 1
+
+    # The following properties are affected by this value
+    # package CYGPKG_DEVS_I2C_CORTEXM_STM32
+    #     ActiveIf: CYGPKG_IO_I2C
+};
+
+# >
+# I2C build options
+# Package specific build options including control over
+# compiler flags used only in building the generic I2C
+# package, and details of which tests are built.
+#
+cdl_component CYGPKG_IO_I2C_OPTIONS {
+    # There is no associated value.
+};
+
+# >
+# Additional compiler flags
+# This option modifies the set of compiler flags for
+# building the generic I2C package. These flags are
+# used in addition to the set of global flags.
+#
+cdl_option CYGPKG_IO_I2C_CFLAGS_ADD {
+    # Flavor: data
+    # No user value, uncomment the following line to provide one.
+    # user_value ""
+    # value_source default
+    # Default value: ""
+};
+
+# Suppressed compiler flags
+# This option modifies the set of compiler flags for
+# building the generic I2C package. These flags are
+# removed from the set of global flags if present.
+#
+cdl_option CYGPKG_IO_I2C_CFLAGS_REMOVE {
+    # Flavor: data
+    # No user value, uncomment the following line to provide one.
+    # user_value ""
+    # value_source default
+    # Default value: ""
+};
+
+# <
+# I2C driver for STM32 family of CORTEX controllers
+# This package provides a generic I2C device driver for the on-chip
+# I2C peripherals in STM32 processors.
+#
+cdl_package CYGPKG_DEVS_I2C_CORTEXM_STM32 {
+    # Packages cannot be added or removed, nor can their version be changed,
+    # simply by editing their value. Instead the appropriate configuration
+    # should be used to perform these actions.
+
+    # ActiveIf constraint: CYGPKG_IO_I2C
+    #     CYGPKG_IO_I2C == current
+    #   --> 1
+    # ActiveIf constraint: CYGPKG_HAL_CORTEXM_STM32
+    #     CYGPKG_HAL_CORTEXM_STM32 == current
+    #   --> 1
+
+    # This value cannot be modified here.
+    # Flavor: booldata
+    # Current value: 1 current
+};
+
+# >
+# Target hardware may have multiple I2C buses
+# The STM32 I2C driver can support multiple I2C bus devices. By
+# default the driver assumes only a single device is present and will
+# optimize for that case, using constant definitions provided by the
+# platform HAL rather than per-device structure fields. If the hardware
+# has multiple I2C bus devices, or if a singleton bus is instantiated
+# by some other package and hence the platform HAL cannot provide the
+# necessary definitions, then this option should be enabled.
+#
+cdl_option CYGHWR_DEVS_I2C_CORTEXM_STM32_MULTIPLE_BUSES {
+    # Flavor: bool
+    user_value 1
+    # value_source user
+    # Default value: 0
+};
+
+# Driver debug output level
+# This option specifies the level of debug data output by
+# the STM32 I2C device driver. A value of 0 signifies
+# no debug data output; 1 signifies normal debug data
+# output. The generic eCos I2C driver functions do not return any 
+# error information if a I2C transfer failed. If this option is
+# 1 then the driver prints the status flags if a transfer failed
+# or was aborted. It prints the status flags in case of a missing 
+# data or address acknowledge, in case of lost arbitration and in 
+# case of a bus error. A missing acknowledge does not realy indicate
+# an error and may be part of a normal I2C communication. Therefore
+# this option should only be >0 for debug reasons.
+#
+cdl_option CYGPKG_DEVS_I2C_CORTEXM_STM32_DEBUG_LEVEL {
+    # Flavor: data
+    # No user value, uncomment the following line to provide one.
+    # user_value 0
+    # value_source default
+    # Default value: 0
+    # Legal values: 0 1
 };
 
 # <

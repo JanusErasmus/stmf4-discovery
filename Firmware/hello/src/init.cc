@@ -60,8 +60,8 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 
 	CYGHWR_HAL_STM32_GPIO_SET(CYGHWR_HAL_STM32_GPIO(D, 5, GPIO_IN, 0, OPENDRAIN, NONE, 2MHZ));
 
-	if(!F4RTC::init())
-		diag_printf(RED("RTC NOT initialized\n"));
+//	if(!F4RTC::init())
+//		diag_printf(RED("RTC NOT initialized\n"));
 
 	cyg_uint32 ledPinNumbers[] = //no pin is 0xFF
 	{

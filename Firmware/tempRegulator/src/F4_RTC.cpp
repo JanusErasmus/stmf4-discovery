@@ -82,6 +82,21 @@ void F4RTC::enableBKProtect()
 
 }
 
+cyg_uint32 F4RTC::getBKP(cyg_uint8 reg)
+{
+	cyg_uint32 data;
+	HAL_READ_UINT32(CYGHWR_HAL_STM32_RTC +CYGHWR_HAL_STM32_RTC_BKxR(reg), data);
+
+	return data;
+}
+
+void F4RTC::setBKP(cyg_uint8 reg, cyg_uint32 data)
+{
+	disableBKProtect();
+	HAL_WRITE_UINT32(CYGHWR_HAL_STM32_RTC +CYGHWR_HAL_STM32_RTC_BKxR(reg), data);
+	enableBKProtect();
+}
+
 bool F4RTC::init()
 {
 	diag_printf("F4RTC: Initializing\n");
@@ -154,10 +169,10 @@ bool F4RTC::hasBeenSet()
 {
 	cyg_uint32 reg32;
 	HAL_READ_UINT32(CYGHWR_HAL_STM32_RTC + CYGHWR_HAL_STM32_RTC_ISR, reg32);
-			if(reg32 & CYGHWR_HAL_STM32_RTC_ISR_INITS)
-				return true;
+	if(reg32 & CYGHWR_HAL_STM32_RTC_ISR_INITS)
+		return true;
 
-			return false;
+	return false;
 }
 
 time_t F4RTC::getTime()

@@ -133,10 +133,13 @@
 #define CYGHWR_HAL_STM32_FLASH          0x40022000
 #elif defined(CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
 #define CYGHWR_HAL_STM32_SYSCFG         0x40013800
+#define CYGHWR_HAL_STM32_SPI4			0x40013400
 #define CYGHWR_HAL_STM32_EXTI           0x40013C00
 #define CYGHWR_HAL_STM32_TIM9           0x40014000
 #define CYGHWR_HAL_STM32_TIM10          0x40014400
 #define CYGHWR_HAL_STM32_TIM11          0x40014800
+#define CYGHWR_HAL_STM32_SPI5			0x40015000
+#define CYGHWR_HAL_STM32_SPI6			0x40015400
 #define CYGHWR_HAL_STM32_GPIOA          0x40020000
 #define CYGHWR_HAL_STM32_GPIOB          0x40020400
 #define CYGHWR_HAL_STM32_GPIOC          0x40020800
@@ -171,17 +174,27 @@
 
 //=============================================================================
 // Device signature and ID registers
-
+#if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
 #define CYGHWR_HAL_STM32_DEV_SIG                0x1FFFF7E0
 #define CYGHWR_HAL_STM32_DEV_SIG_RSIZE(__s)     (((__s)>>16)&0xFFFF)
 #define CYGHWR_HAL_STM32_DEV_SIG_FSIZE(__s)     ((__s)&0xFFFF)
 
-#define CYGHWR_HAL_STM32_MCU_ID                 0xe0042000
+#define CYGHWR_HAL_STM32_MCU_ID                 0x1FFFF7E8
 #define CYGHWR_HAL_STM32_MCU_ID_DEV(__x)        ((__x)&0xFFF)
 #define CYGHWR_HAL_STM32_MCU_ID_DEV_MEDIUM      0x410
 #define CYGHWR_HAL_STM32_MCU_ID_DEV_HIGH        0x414
 #define CYGHWR_HAL_STM32_MCU_ID_REV(__x)        (((__x)>>16)&0xFFFF)
+#elif defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
+#define CYGHWR_HAL_STM32_DEV_SIG                0x1FFF7A22
+#define CYGHWR_HAL_STM32_DEV_SIG_RSIZE(__s)     (((__s)>>16)&0xFFFF)
+#define CYGHWR_HAL_STM32_DEV_SIG_FSIZE(__s)     ((__s)&0xFFFF)
 
+#define CYGHWR_HAL_STM32_MCU_ID                 0x1FFF7A10
+#define CYGHWR_HAL_STM32_MCU_ID_DEV(__x)        ((__x)&0xFFF)
+#define CYGHWR_HAL_STM32_MCU_ID_DEV_MEDIUM      0x410
+#define CYGHWR_HAL_STM32_MCU_ID_DEV_HIGH        0x414
+#define CYGHWR_HAL_STM32_MCU_ID_REV(__x)        (((__x)>>16)&0xFFFF)
+#endif
 //=============================================================================
 // RCC
 //
@@ -497,10 +510,13 @@
 #define CYGHWR_HAL_STM32_RCC_APB2ENR_ADC3       (10)
 #define CYGHWR_HAL_STM32_RCC_APB2ENR_SDIO       (11)
 #define CYGHWR_HAL_STM32_RCC_APB2ENR_SPI1       (12)
+#define CYGHWR_HAL_STM32_RCC_APB2ENR_SPI4       (13)
 #define CYGHWR_HAL_STM32_RCC_APB2ENR_SYSCFG     (14)
 #define CYGHWR_HAL_STM32_RCC_APB2ENR_TIM9       (16)
 #define CYGHWR_HAL_STM32_RCC_APB2ENR_TIM10      (17)
 #define CYGHWR_HAL_STM32_RCC_APB2ENR_TIM11      (18)
+#define CYGHWR_HAL_STM32_RCC_APB2ENR_SPI5       (20)
+#define CYGHWR_HAL_STM32_RCC_APB2ENR_SPI6       (21)
 
 #endif
 
@@ -1362,6 +1378,10 @@ __externC void hal_stm32_clock_disable( cyg_uint32 desc );
 #define CYGHWR_HAL_STM32_SPI1_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB2, SPI1 )
 #define CYGHWR_HAL_STM32_SPI2_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB1, SPI2 )
 #define CYGHWR_HAL_STM32_SPI3_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB1, SPI3 )
+#define CYGHWR_HAL_STM32_SPI4_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB2, SPI4 )
+#define CYGHWR_HAL_STM32_SPI5_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB2, SPI5 )
+#define CYGHWR_HAL_STM32_SPI6_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB2, SPI6 )
+
 
 //=============================================================================
 // I2C busses
@@ -1878,11 +1898,9 @@ __externC void hal_stm32_bd_protect( int protect );
 
 //=============================================================================
 // CAN
-//
+// Include separate header file for this to avoid this header getting unmanageable.
 
-#define CYGHWR_HAL_STM32_CAN1_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB1, CAN1 )
-#define CYGHWR_HAL_STM32_CAN2_CLOCK             CYGHWR_HAL_STM32_CLOCK( APB1, CAN2 )
-
+#include <cyg/hal/var_io_can.h>
 
 //=============================================================================
 // Ethernet MAC

@@ -135,5 +135,15 @@
 /***** serial driver proc output start *****/
 #define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/io_serial_cortexm_stm32.h>
 /*****  serial driver proc output end  *****/
+#define CYGPKG_IO_I2C current
+#define CYGPKG_IO_I2C_current
+#define CYGNUM_IO_I2C_VERSION_MAJOR CYGNUM_VERSION_CURRENT
+#define CYGNUM_IO_I2C_VERSION_MINOR -1
+#define CYGNUM_IO_I2C_VERSION_RELEASE -1
+#define CYGPKG_DEVS_I2C_CORTEXM_STM32 current
+#define CYGPKG_DEVS_I2C_CORTEXM_STM32_current
+#define CYGNUM_DEVS_I2C_CORTEXM_STM32_VERSION_MAJOR CYGNUM_VERSION_CURRENT
+#define CYGNUM_DEVS_I2C_CORTEXM_STM32_VERSION_MINOR -1
+#define CYGNUM_DEVS_I2C_CORTEXM_STM32_VERSION_RELEASE -1
 
 #endif

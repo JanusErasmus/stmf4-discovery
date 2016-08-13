@@ -13,16 +13,21 @@
 
 #include "debug_display.h"
 #include "anLCD.h"
+#include "menu_main.h"
 
+#include "utils.h"
 #include "led.h"
 #include "F4_RTC.h"
 #include "input_port.h"
 #include "keypad.h"
 #include "temp_probe.h"
+#include "i2c_dev.h"
+#include "ht_stmHTS221.h"
+#include "output_port.h"
+#include "motor.h"
+#include "watchdog.h"
 
 cInit * cInit::__instance = NULL;
-
-
 
 void setDBpins(cyg_uint8 data)
 {
@@ -43,6 +48,8 @@ void cInit::init()
 
 cInit::cInit()
 {
+    cWatchDog::start();
+
     cyg_thread_create(INIT_PRIORITY,
                       cInit::init_thread_func,
                       NULL,
@@ -53,20 +60,33 @@ cInit::cInit()
                       &mThread);
     cyg_thread_resume(mThreadHandle);
 
+
     mPDx_IntHandle = 0;
     mMainMenu = 0;
+    mRotateTime  = 0;
+    htSensor = 0;
 }
-
 
 void cInit::init_thread_func(cyg_addrword_t arg)
 {
-	CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT,1);
-	CYGHWR_HAL_STM32_GPIO_SET(ELEMENT_OUTPUT);
-	CYGHWR_HAL_STM32_GPIO_SET(CYGHWR_HAL_STM32_PIN_IN(D, 5, FLOATING));
+	cOutput* ports[] = {
+			new cOutput(POWER_ENABLE),
+			new cOutput(RL1_ON, true),
+			new cOutput(RL2_ON, true),
+			new cOutput(RL3_ON, true),
+			new cOutput(RL4_ON, true),
+			0
+	};
+	cOutputDriver::init(ports);
 
+	ports[0]->set();
+
+	cMotor::init(ports[2], ports[1]);
+
+	__instance->mEnv = new cEnvironment(ports[4], ports[3]);
 
 	if(!F4RTC::init())
-		diag_printf(RED("RTC NOT initialized\n"));
+		diag_printf("RTC NOT initialized\n");
 
 //	cyg_uint32 ledPinNumbers[] = //no pin is 0xFF
 //	{
@@ -77,6 +97,65 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 //	};
 //	cLED::init(ledPinNumbers, 4);
 
+	__instance->setupDisplay();
+
+	__instance->htSensor = new cHTstmHTS221(&HTS_humidity);
+	cyg_bool htStatus = __instance->htSensor->getStatus();
+	if(!htStatus)
+	{
+		delete __instance->htSensor;
+		__instance->htSensor = 0;
+		diag_printf(RED("HT MONITOR: NO SENSOR DETECTED\n"));
+	}
+
+	// Initialize the Terminals
+	char * prompt = "lcdMenu>>";
+	//usbTerm::init(128, prompt);
+	uartTerm::init("/dev/tty1", 128, prompt);
+
+
+	for (;;)
+	{
+		__instance->run();
+	}
+}
+
+void cInit::run()
+{
+
+	if(htSensor)
+	{
+		analogSeq::seqSample temp = htSensor->getPortSample(cHTmonitor::TEMPERATURE);
+		cyg_thread_delay(100);
+		analogSeq::seqSample humid = htSensor->getPortSample(cHTmonitor::HUMIDITY);
+
+//		double temp = probe->getTemp();
+
+		static cyg_uint8 validSequence = 0;
+		if(validSequence != temp.sequence)
+		{
+			diag_printf("sampled %d != %d\n", temp.sequence, validSequence);
+			validSequence = temp.sequence;
+			cWatchDog::kick();
+		}
+
+		cyg_bool heater = false, water = false;
+		if(mEnv)
+		{
+			mEnv->run(temp.value, humid.value);
+			mEnv->getStates(heater, water);
+		}
+
+		mMainMenu->updateReading(temp.value, humid.value, heater, water);
+	}
+
+	handleMotor();
+	cyg_thread_delay(500);
+
+}
+
+void cInit::setupDisplay()
+{
 	CYGHWR_HAL_STM32_CLOCK_ENABLE(CYGHWR_HAL_STM32_CLOCK(AHB1, GPIOC));
 
 	cyg_uint32 columns[] =
@@ -126,35 +205,12 @@ void cInit::init_thread_func(cyg_addrword_t arg)
 			LCD_DB7,
 			setDBpins
 	);
+
 	alphaNumericLCD * lcd = new alphaNumericLCD(lcdPins);
 
 	__instance->mMainMenu = new cMainMenu(lcd, 0);
 	pad->setMenu(__instance->mMainMenu);
 	__instance->mMainMenu->open();
-
-	tempProbe * probe = new tempProbe(TEMP_IN1);
-
-	// Initialize the Terminals
-	char * prompt = "lcdMenu>>";
-	//usbTerm::init(128, prompt);
-	uartTerm::init("/dev/tty1", 128, prompt);
-
-	for (;;)
-	{
-		probe->sample();
-//		double temp = probe->getTemp();
-//		if(temp > 0)
-//		{
-//			printf("T: %.1f\n", temp);
-//			if(temp < 80.0)
-//				CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT, 1);
-//
-//			if( temp > 85.0)
-//				CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT, 0);
-//		}
-
-		cyg_thread_delay(100);
-	}
 }
 
 void cInit::handleNavigation(cTerm & t,int argc,char *argv[])
@@ -163,13 +219,28 @@ void cInit::handleNavigation(cTerm & t,int argc,char *argv[])
 		return;
 
 	if(!strcmp(argv[0], "on"))
-		{
-		CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT, 1);
-		}
+	{
+		CYGHWR_HAL_STM32_GPIO_OUT(POWER_ENABLE, 1);
+	}
 
 	if(!strcmp(argv[0], "off"))
-		{
-		CYGHWR_HAL_STM32_GPIO_OUT(ELEMENT_OUTPUT, 0);
-		}
+	{
+		CYGHWR_HAL_STM32_GPIO_OUT(POWER_ENABLE, 0);
+
+	}
 }
 
+void cInit::handleMotor()
+{
+	if((mRotateTime + (30 * 60)) < time(0))
+	{
+		__instance->mRotateTime = time(0);
+		cMotor::get()->rotate();
+	}
+}
+
+
+void cInit::forceRotate()
+{
+	__instance->mRotateTime = 0;
+};
