@@ -24,6 +24,8 @@ TermCMD::cmd_table_t TermCMD::mCmdTable [] =
 	{"OUTPUT"	,0,0,0},
 	{"o"	, "",			"List output ports", cOutputDriver::setOutput},
 	{"r"	, "",			"Rotate motor", cMotor::debugMotor},
+	{"SYSMON"	,0,0,0},
+	{"status"	, "",			"Show status", cInit::debug},
 
 
 

@@ -85,7 +85,7 @@ void F4RTC::enableBKProtect()
 cyg_uint32 F4RTC::getBKP(cyg_uint8 reg)
 {
 	cyg_uint32 data;
-	HAL_READ_UINT32(CYGHWR_HAL_STM32_RTC +CYGHWR_HAL_STM32_RTC_BKxR(reg), data);
+	HAL_READ_UINT32(CYGHWR_HAL_STM32_RTC + CYGHWR_HAL_STM32_RTC_BKxR(reg), data);
 
 	return data;
 }
@@ -93,7 +93,7 @@ cyg_uint32 F4RTC::getBKP(cyg_uint8 reg)
 void F4RTC::setBKP(cyg_uint8 reg, cyg_uint32 data)
 {
 	disableBKProtect();
-	HAL_WRITE_UINT32(CYGHWR_HAL_STM32_RTC +CYGHWR_HAL_STM32_RTC_BKxR(reg), data);
+	HAL_WRITE_UINT32(CYGHWR_HAL_STM32_RTC + CYGHWR_HAL_STM32_RTC_BKxR(reg), data);
 	enableBKProtect();
 }
 

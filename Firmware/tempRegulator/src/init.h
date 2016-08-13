@@ -39,7 +39,7 @@ public:
 	static void forceRotate();
 	static void handleNavigation(cTerm & t,int argc,char *argv[]);
 
-
+	static void debug(cTerm & t,int argc,char *argv[]);
 };
 
 #endif //Include Guard

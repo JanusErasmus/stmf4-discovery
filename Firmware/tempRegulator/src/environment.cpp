@@ -1,5 +1,5 @@
 #include <math.h>
-#include "F4_RTC.h"
+#include "nvm.h"
 #include "environment.h"
 
 cEnvironment::cEnvironment(cOutput *heater, cOutput *water) : mHeater(heater), mWater(water)
@@ -15,7 +15,7 @@ void cEnvironment::run(float temp, float humid)
 
 void cEnvironment::handleHeater(float temp)
 {
-	cyg_uint8 setTemperature = F4RTC::getBKP(0);
+	cyg_uint8 setTemperature = cNVM::getTemp();
 
 	if(isnan(temp))
 	{
@@ -23,11 +23,11 @@ void cEnvironment::handleHeater(float temp)
 		return;
 	}
 
-	if((cyg_uint8)temp < (setTemperature - 1))
+	if(temp < (float)(setTemperature - 1))
 	{
 		mHeater->set();
 	}
-	else if((cyg_uint8)temp > (setTemperature))
+	else if(temp > (float)(setTemperature))
 	{
 		mHeater->reset();
 	}
@@ -35,17 +35,19 @@ void cEnvironment::handleHeater(float temp)
 
 void cEnvironment::handleWater(float humid)
 {
+	cyg_uint8 setHumid = cNVM::getHumid();
+
 	if(isnan(humid))
 	{
 		mWater->reset();
 		return;
 	}
 
-	if((cyg_uint8)humid < (60 - 10))
+	if(humid < (float)(setHumid - 10))
 	{
 		mWater->set();
 	}
-	else if((cyg_uint8)humid > (60 + 1))
+	else if(humid > (float)(setHumid))
 	{
 		mWater->reset();
 	}
@@ -57,7 +59,7 @@ void cEnvironment::getStates(cyg_bool &heater, cyg_bool &water)
 	water = mWater->get();
 }
 
-cEnvironment::~cEnvironment() {
-	// TODO Auto-generated destructor stub
+cEnvironment::~cEnvironment()
+{
 }
 

@@ -1,28 +1,28 @@
 #include <cyg/kernel/diag.h>
 
 #include "nvm.h"
-#include "menu_set_temp.h"
+#include "menu_set_humid.h"
 
-cMenuSetTemp::cMenuSetTemp(cLineDisplay * lcd, cLCDmenu * parent) : cLCDmenu(lcd, "Set Temperature", parent)
+cMenuSetHumid::cMenuSetHumid(cLineDisplay * lcd, cLCDmenu * parent) : cLCDmenu(lcd, "Set Humidity", parent)
 {
-	mTemperature = cNVM::getTemp();
+	mHumidity = cNVM::getHumid();
 	mCursurPos = 2;
 }
 
-void cMenuSetTemp::open()
+void cMenuSetHumid::open()
 {
 	mDisplay->clear();
 	mDisplay->println(1, mHeading);
-	mDisplay->println(2,"   %02d C", mTemperature);
+	mDisplay->println(2,"   %02d %%", mHumidity);
 
 	mDisplay->println(4,"*: BACK      #:ENTER");
 
 	mDisplay->showCursor(mCursurPos,3);
 }
 
-void cMenuSetTemp::handleButtonPress(char button)
+void cMenuSetHumid::handleButtonPress(char button)
 {
-	diag_printf("Temp press %c\n", button);
+	diag_printf("Humid press %c\n", button);
 
 	if(button == '*')
 	{
@@ -42,32 +42,32 @@ void cMenuSetTemp::handleButtonPress(char button)
 		switch(idx++)
 		{
 		case 0:
-			ones = mTemperature % 10;
-			mTemperature = ones + (num * 10);
+			ones = mHumidity % 10;
+			mHumidity = ones + (num * 10);
 			break;
 		case 1:
-			mTemperature = mTemperature - ones + num;
+			mHumidity = mHumidity - ones + num;
 			mDisplay->setCursor(mCursurPos,3);
 			idx = 0;
 			break;
 		default:
 			break;
 		}
-		diag_printf("%02d\n", mTemperature);
+		diag_printf("%02d\n", mHumidity);
 
 		return;
 	}
 
 	if(button == '#')
 	{
-		cNVM::setTemp(mTemperature);
+		cNVM::setHumid(mHumidity);
 		mDisplay->hideCursor();
 		mParent->returnParentMenu();
 		return;
 	}
 }
 
-cMenuSetTemp::~cMenuSetTemp()
+cMenuSetHumid::~cMenuSetHumid()
 {
 }
 

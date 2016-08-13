@@ -26,6 +26,7 @@
 #include "output_port.h"
 #include "motor.h"
 #include "watchdog.h"
+#include "nvm.h"
 
 cInit * cInit::__instance = NULL;
 
@@ -65,10 +66,13 @@ cInit::cInit()
     mMainMenu = 0;
     mRotateTime  = 0;
     htSensor = 0;
+    mEnv = 0;
 }
 
 void cInit::init_thread_func(cyg_addrword_t arg)
 {
+	cNVM::init();
+
 	cOutput* ports[] = {
 			new cOutput(POWER_ENABLE),
 			new cOutput(RL1_ON, true),
@@ -146,7 +150,11 @@ void cInit::run()
 			mEnv->getStates(heater, water);
 		}
 
-		mMainMenu->updateReading(temp.value, humid.value, heater, water);
+		int rotation = __instance->mRotateTime + cNVM::getInterval() - time(0);
+		if(rotation < 0)
+			rotation = 0;
+
+		mMainMenu->updateReading(temp.value, humid.value, heater, water, rotation);
 	}
 
 	handleMotor();
@@ -232,13 +240,20 @@ void cInit::handleNavigation(cTerm & t,int argc,char *argv[])
 
 void cInit::handleMotor()
 {
-	if((mRotateTime + (30 * 60)) < time(0))
+	if((mRotateTime + cNVM::getInterval()) < (cyg_uint32)time(0))
 	{
 		__instance->mRotateTime = time(0);
 		cMotor::get()->rotate();
 	}
 }
 
+void cInit::debug(cTerm & t,int argc,char *argv[])
+{
+	if(!__instance)
+		return;
+
+	diag_printf("Next rotation will be in %ds\n", (cyg_uint32)(__instance->mRotateTime + cNVM::getInterval() - time(0)));
+}
 
 void cInit::forceRotate()
 {

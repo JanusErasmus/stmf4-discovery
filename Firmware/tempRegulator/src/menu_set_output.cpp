@@ -3,11 +3,11 @@
 #include "definitions.h"
 #include "menu_set_output.h"
 #include "pwm_port.h"
-#include "F4_RTC.h"
+#include "nvm.h"
 
 cMenuSetOutput::cMenuSetOutput(cLineDisplay * lcd, cLCDmenu * parent) : cLCDmenu(lcd, "Set Turn Time", parent)
 {
-	mInterval = F4RTC::getBKP(1) / 3600;
+	mInterval = cNVM::getInterval() / 3600;
 	mCursurPos = 2;
 }
 
@@ -61,7 +61,7 @@ void cMenuSetOutput::handleButtonPress(char button)
 
 		if(button == '#')
 		{
-			F4RTC::setBKP(1, mInterval * 3600);
+			cNVM::setInterval(mInterval * 3600);
 			mDisplay->hideCursor();
 			mParent->returnParentMenu();
 			return;

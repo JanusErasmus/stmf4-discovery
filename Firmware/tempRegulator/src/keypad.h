@@ -1,6 +1,7 @@
 #ifndef SRC_KEYPAD_H_
 #define SRC_KEYPAD_H_
 #include <cyg/kernel/kapi.h>
+#include <cyg/hal/hal_arch.h>
 
 #include "input_port.h"
 
@@ -20,6 +21,16 @@ class cKeypad : public inputListener
 	cyg_uint32* mRowList;
 
 	menuInput * mMenuInput;
+
+	cyg_mutex_t mEventMutex;
+	cyg_cond_t mEventWait;
+	cyg_uint8 mRowEvent;
+	cyg_uint8 mColumnEvent;
+
+	cyg_uint8 mStack[CYGNUM_HAL_STACK_SIZE_MINIMUM];
+	cyg_thread mThread;
+	cyg_handle_t mThreadHandle;
+	static void thread_func(cyg_addrword_t arg);
 
 	void inputChanged(cyg_bool state);
 

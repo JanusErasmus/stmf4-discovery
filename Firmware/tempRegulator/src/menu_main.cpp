@@ -4,49 +4,83 @@
 
 #include "definitions.h"
 #include "init.h"
+#include "nvm.h"
 #include "menu_main.h"
 #include "menu_set_time.h"
 #include "menu_set_output.h"
 #include "menu_set_temp.h"
+#include "menu_set_humid.h"
 
 cMainMenu::cMainMenu(cLineDisplay * lcd, cLCDmenu * parent) :
 	cLCDmenu(lcd, "Main Menu", parent)
 {
-	mMenuCnt = 3;
-	mCursurPos = 2;
+	mPrevTemp = NAN;
+	mPrevHumid = NAN;
+	mPrevPins = 0;
+	mRotation = 0;
+	mCursurPos = 0;
+	mMenuCnt = 0;
 }
+
+void cMainMenu::fillRotation(char *string)
+{
+	if(mRotation > 3600)//hours left
+	{
+		int hours = mRotation/3600;
+		cyg_uint8 min = (mRotation - (hours * 3600)) / 60;
+		sprintf(string, "%2dh%02dm", hours, min);
+	}
+	else if(mRotation > 60) //minutes left
+	{
+		sprintf(string, "%2dm%02ds", (int)mRotation/60, mRotation%60);
+	}
+	else //seconds left
+	{
+		sprintf(string, "%5ds", mRotation);
+	}
+}
+
 
 void cMainMenu::open()
 {
+	char timeString[16];
+	cyg_uint32 setTemp = cNVM::getTemp();
+	cyg_uint32 setHumid = cNVM::getHumid();
+
 	mDisplay->clear();
 
-	mCursurPos = 3;
+	time_t now = time(NULL);
+	strftime(timeString, 16, "%H:%M", localtime(&now));
 
+	char rotationString[16];
+	fillRotation(rotationString);
+	mDisplay->println(1, "%s    turn:%s", timeString, rotationString);
 
-	mDisplay->println(2,"       STANDBY");
+	mDisplay->println(2, "TEMP (%2d): %0.1f", setTemp, mPrevTemp);
+	mDisplay->println(3, "HUMID(%2d): %0.1f", setHumid, mPrevHumid);
+
+	cyg_bool heater = (mPrevPins & 0x01);
+	cyg_bool water = (mPrevPins & 0x02);
+
+	mDisplay->println(4, "H: %s    W: %s", heater?"ON ":"OFF", water?"ON ":"OFF");
 
 }
 
-void cMainMenu::updateReading(float temp, float humid, cyg_bool heater, cyg_bool water)
+void cMainMenu::updateReading(float temp, float humid, cyg_bool heater, cyg_bool water, cyg_uint32 rotation)
 {
+	mPrevTemp = temp;
+	mPrevHumid = humid;
+	mRotation = rotation;
+
+	mPrevPins = 0;
+	if(heater)
+		mPrevPins |= 0x01;
+	if(water)
+		mPrevPins |= 0x02;
+
 	if(!mSubMenu)
 	{
-		char string[32];
-
-		mDisplay->clear();
-
-		time_t now = time(NULL);
-		strftime(string, 16, "     %H:%M", localtime(&now));
-		mDisplay->println(1, string);
-
-		sprintf(string, "TEMPERATURE: %0.1f", temp);
-		mDisplay->println(2,string);
-
-		sprintf(string, "HUMIDITY   : %0.1f", humid);
-		mDisplay->println(3,string);
-
-		sprintf(string, "H: %s    W: %s", heater?"ON ":"OFF", water?"ON ":"OFF");
-		mDisplay->println(4,string);
+		open();
 	}
 }
 
@@ -67,9 +101,12 @@ void cMainMenu::handleButtonPress(char button)
 		mSubMenu = new cMenuSetTemp(mDisplay, this);
 		mSubMenu->open();
 		break;
+	case '5':
+		mSubMenu = new cMenuSetHumid(mDisplay, this);
+		mSubMenu->open();
+		break;
 
 	case 'D':
-
 		mDisplay->clear();
 		mDisplay->println(1,"      ROTATE...");
 		mDisplay->println(2,"       STANDBY");

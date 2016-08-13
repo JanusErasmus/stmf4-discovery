@@ -25,6 +25,18 @@ cKeypad::cKeypad(cyg_uint32* colSpec, cyg_uint8 colCount, cyg_uint32* rowSpec, c
 
 	setupPorts();
 
+	cyg_mutex_init(&mEventMutex);
+	cyg_cond_init(&mEventWait, &mEventMutex);
+
+    cyg_thread_create(18,
+                      thread_func,
+                      (cyg_addrword_t)this,
+                      (char *)"keypad Thread",
+                      mStack,
+					  CYGNUM_HAL_STACK_SIZE_MINIMUM,
+                      &mThreadHandle,
+                      &mThread);
+    cyg_thread_resume(mThreadHandle);
 }
 
 void cKeypad::setupPorts()
@@ -136,15 +148,34 @@ void cKeypad::unMaskColumnInterrupts()
 	HAL_WRITE_UINT32( CYGHWR_HAL_STM32_EXTI + CYGHWR_HAL_STM32_EXTI_IMR, imrReg);
 }
 
+void cKeypad::thread_func(cyg_addrword_t arg)
+{
+	cKeypad* _this = (cKeypad*) arg;
+
+	while(1)
+	{
+		cyg_mutex_lock(&(_this->mEventMutex));
+		if(cyg_cond_wait(&(_this->mEventWait)))
+		{
+			if(_this->mMenuInput)
+				_this->mMenuInput->buttonPress(keys[_this->mRowEvent][_this->mColumnEvent]);
+			else
+				diag_printf("Key: %c\n", keys[_this->mRowEvent][_this->mColumnEvent]);
+		}
+		cyg_mutex_unlock(&(_this->mEventMutex));
+	}
+}
+
 void cKeypad::handleKeyPress(int col, int row)
 {
 	if((col < 0) || (row < 0))
 		return;
 
-	if(mMenuInput)
-		mMenuInput->buttonPress(keys[row][col]);
-	else
-		diag_printf("Key: %c\n", keys[row][col]);
+	//cyg_mutex_lock(&mEventMutex);
+	mColumnEvent = col;
+	mRowEvent = row;
+	cyg_cond_signal(&mEventWait);
+	//cyg_mutex_unlock(&mEventMutex);
 }
 
 void cKeypad::inputChanged(cyg_bool state)
@@ -164,7 +195,7 @@ void cKeypad::inputChanged(cyg_bool state)
 
 }
 
-cKeypad::~cKeypad() {
-	// TODO Auto-generated destructor stub
+cKeypad::~cKeypad()
+{
 }
 

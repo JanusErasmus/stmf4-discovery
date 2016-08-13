@@ -47,7 +47,7 @@ public:
     analogSeq::seqSample getPortSample(cyg_uint8 port, cyg_uint8 seq);
     analogSeq::seqSample getPortSample(cyg_uint8 port);
 
-    ~cHTmonitor();
+    virtual ~cHTmonitor();
 
 
 };
