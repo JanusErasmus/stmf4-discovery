@@ -54,15 +54,13 @@ void cMainMenu::open()
 
 	char rotationString[16];
 	fillRotation(rotationString);
-	mDisplay->println(1, "%s    turn:%s", timeString, rotationString);
-
-	mDisplay->println(2, "TEMP (%2d): %0.1f", setTemp, mPrevTemp);
-	mDisplay->println(3, "HUMID(%2d): %0.1f", setHumid, mPrevHumid);
+	mDisplay->println(1, "       %s", timeString);
 
 	cyg_bool heater = (mPrevPins & 0x01);
 	cyg_bool water = (mPrevPins & 0x02);
-
-	mDisplay->println(4, "H: %s    W: %s", heater?"ON ":"OFF", water?"ON ":"OFF");
+	mDisplay->println(2, "TEMP (%2d): %0.1f  %s", setTemp, mPrevTemp, heater?"ON ":"OFF");
+	mDisplay->println(3, "HUMID(%2d): %0.1f  %s", setHumid, mPrevHumid, water?"ON ":"OFF");
+	mDisplay->println(4, "NEXT TURN: %s", rotationString);
 
 }
 
